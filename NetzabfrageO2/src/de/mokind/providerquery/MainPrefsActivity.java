@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import de.mokind.R;
 
 public class MainPrefsActivity extends PreferenceActivity  {
 	

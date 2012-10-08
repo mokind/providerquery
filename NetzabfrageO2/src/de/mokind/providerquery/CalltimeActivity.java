@@ -28,6 +28,7 @@ import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
 import android.widget.Toast;
+import de.mokind.R;
 import de.mokind.providerquery.db.NetworkDatabase;
 import de.mokind.providerquery.util.LoadList;
 import de.mokind.providerquery.util.Sum;
