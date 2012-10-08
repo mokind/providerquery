@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import de.mokind.R;
 import de.mokind.providerquery.db.NetworkDatabase;
 
 public class CallReceiver extends BroadcastReceiver {

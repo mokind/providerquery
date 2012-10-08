@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
+import de.mokind.R;
 import de.mokind.providerquery.util.LoadList;
 
 /**

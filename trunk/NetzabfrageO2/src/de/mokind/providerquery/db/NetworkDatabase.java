@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Color;
-import de.mokind.providerquery.R;
+import de.mokind.R;
 
 /**
  * Access to network database
