@@ -39,6 +39,7 @@ public abstract class LoadList {
 	public static final String KEY_MINUTES = "duration";
 	public static final String KEY_PROGRESS = "progress";
 
+	private static Map<String, Sum> data = null;
 	
 	/**
 	 * Calculates the start of the billing period as a {@link Calendar}
@@ -80,7 +81,6 @@ public abstract class LoadList {
 	 * @return
 	 */
 	public static ArrayList< HashMap<String, Object> > loadList(Context context){
-		ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
 		// get apps preferences
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		int free_minutes = 0;
@@ -94,7 +94,7 @@ public abstract class LoadList {
 		
 				
 		// init data
-		Map<String, Sum> data = new LinkedHashMap<String, Sum>();
+		data = new LinkedHashMap<String, Sum>();
 
 		// get database
 		NetworkDatabase db = new NetworkDatabase(context);
@@ -103,13 +103,13 @@ public abstract class LoadList {
 		String[] providers =  db.getKnownProviders();
 		for (String provider: providers){
 			if (NetworkRequester.NO_PROVIDER_TEXT.equals(provider)){
-				data.put(provider, new Sum (ROW_LANDLINE, 0, 0, false));	
+				data.put(provider, new Sum (ROW_LANDLINE, 0, 0));	
 			} else{
-				data.put(provider, new Sum (provider, 0, 0, false));
+				data.put(provider, new Sum (provider, 0, 0));
 			}
 		}
 		// add unknown row
-		data.put(ROW_UNKNOWN, new Sum (ROW_UNKNOWN, 0, 0, false));
+		data.put(ROW_UNKNOWN, new Sum (ROW_UNKNOWN, 0, 0));
 	
 		// get call log data
 		Calendar cal = getBillingPeriodStart(context);
@@ -136,7 +136,13 @@ public abstract class LoadList {
 				}
 				Sum sum = data.get(provider);
 				if (sum != null){
-					sum.minutes += minutes;
+					sum.setMinutes(minutes + sum.getMinutes());
+					Sum numberSum = sum.getChildren().get(number);
+					if (numberSum == null){
+						numberSum = new Sum(number, 0, -1);
+						sum.getChildren().put(number, numberSum);
+					}
+					numberSum.setMinutes(numberSum.getMinutes() + minutes);							
 				}else{
 					Log.e(LoadList.class.getName(), "getList() Provider unknown '" + provider + "'");
 				}
@@ -150,32 +156,37 @@ public abstract class LoadList {
 		
 		if (ownFlatrate || landlineFlatrate || free_minutes > 0){
 			if (free_minutes > 0){
-				freeSum = new Sum (ROW_FREE_MINUTES, 0, free_minutes, true);
+				freeSum = new Sum (ROW_FREE_MINUTES, 0, free_minutes);
 			}
 			if (ownFlatrate || landlineFlatrate){
-				flatSum = new Sum (ROW_FLATRATE, 0, 0, false);
+				flatSum = new Sum (ROW_FLATRATE, 0, 0);
 			}			
 			
 			ArrayList<String> otherProvider = new ArrayList<String>(Arrays.asList(OTHER_PROVIDERS));
 			for (Sum providerSum: data.values()){
-				if (otherProvider.contains(providerSum.name) && freeSum != null){
+				if (otherProvider.contains(providerSum.getName()) && freeSum != null){
 					// other providers
-					freeSum.minutes += providerSum.minutes;
-				}else if (MY_PROVIDER.equals(providerSum.name)){
+					freeSum.setMinutes( freeSum.getMinutes() + providerSum.getMinutes());
+					freeSum.getChildren().putAll(providerSum.getChildren());
+				}else if (MY_PROVIDER.equals(providerSum.getName())){
 						// my provider
 						if (ownFlatrate){
-							flatSum.minutes += providerSum.minutes;
+							flatSum.setMinutes(flatSum.getMinutes() + providerSum.getMinutes());
+							flatSum.getChildren().putAll(providerSum.getChildren());
 						}else if (freeSum != null){
-							freeSum.minutes += providerSum.minutes;
+							freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
+							freeSum.getChildren().putAll(providerSum.getChildren());
 						}
-				}else if (ROW_UNKNOWN.equals(providerSum.name)){
+				}else if (ROW_UNKNOWN.equals(providerSum.getName())){
 					// unknown -> discard
 				}else if (landlineFlatrate){
 					// landline flat
-					flatSum.minutes += providerSum.minutes;
+					flatSum.setMinutes(flatSum.getMinutes() + providerSum.getMinutes());
+					flatSum.getChildren().putAll(providerSum.getChildren());
 				}else if (freeSum != null){
 					// landline minute pack
-					freeSum.minutes += providerSum.minutes;
+					freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
+					freeSum.getChildren().putAll(providerSum.getChildren());
 				}
 			}
 		}
@@ -186,24 +197,47 @@ public abstract class LoadList {
 		
 		if (freeSum != null){
 			// add free minutes row
-			data.put(freeSum.name, freeSum);
+			data.put(freeSum.getName(), freeSum);
 		}
 		if (flatSum != null){
 			// add flat rate row
-			data.put(flatSum.name, flatSum);
+			data.put(flatSum.getName(), flatSum);
 		}
 		data.putAll(tempdata);
 
-		// create data for list adapter
-		dataArray.clear();
-		for (Sum sum: data.values()){
-			HashMap<String, Object> row = new HashMap<String, Object>();
-			row.put(KEY_NAME, sum.name);
-			row.put(KEY_MINUTES, sum);
-			row.put(KEY_PROGRESS, sum);
-			dataArray.add(row);
+		return getDataArray(context, null);
+	}
+	
+	/**
+	 * create data for list adapter
+	 * @param context
+	 * @param provider
+	 * @return
+	 */
+	public static ArrayList< HashMap<String, Object> > getDataArray(Context context, String provider){
+		if (data == null){
+			loadList(context);
 		}
-		
+		ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
+		Map<String, Sum> myData = data;
+		if (provider != null){
+			if (provider.equals(ROW_LANDLINE)){
+				provider = NetworkRequester.NO_PROVIDER_TEXT;
+			}
+			Sum providerSum = myData.get(provider);
+			if (providerSum != null){
+				myData = providerSum.getChildren();
+			}
+		}
+		if (myData != null){
+			for (Sum sum: myData.values()){
+				HashMap<String, Object> row = new HashMap<String, Object>();
+				row.put(KEY_NAME, sum.getName());
+				row.put(KEY_MINUTES, sum);
+				row.put(KEY_PROGRESS, sum);
+				dataArray.add(row);
+			}
+		}
 		return dataArray;
 	}
 

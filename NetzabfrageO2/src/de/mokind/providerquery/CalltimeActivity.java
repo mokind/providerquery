@@ -65,17 +65,17 @@ public class CalltimeActivity extends Activity {
 				((TextView)view).setText(textRepresentation);
 			}else if (data instanceof Sum && view instanceof TextView) {
 				Sum sum = (Sum)data;
-				if (sum.showProgress){
-					((TextView)view).setText(sum.minutes + " von " + sum.minutesMax + " Minuten");
+				if (sum.isShowProgress()){
+					((TextView)view).setText(sum.getMinutes() + " von " + sum.getMinutesMax() + " Minuten");
 				}else{
-					((TextView)view).setText(sum.minutes + " Minuten");
+					((TextView)view).setText(sum.getMinutes() + " Minuten");
 				}
 			}else if (data instanceof Sum && view instanceof ProgressBar){
 				ProgressBar prog = (ProgressBar)view;
 				Sum sum = (Sum)data;
-				prog.setVisibility(sum.showProgress ? View.VISIBLE : View.GONE );
-				prog.setMax(sum.minutesMax);
-				prog.setProgress(sum.minutes);
+				prog.setVisibility(sum.isShowProgress() ? View.VISIBLE : View.GONE );
+				prog.setMax(sum.getMinutesMax());
+				prog.setProgress(sum.getMinutes());
 			}else if (view.getId() == R.id.calltime_provider_logo){
 				view.setVisibility(View.GONE);
 			}else if (view.getId() == R.id.calltime_sum_icon){
@@ -133,19 +133,20 @@ public class CalltimeActivity extends Activity {
 		setContentView(R.layout.calltime_list);
 		billingPediodView = (TextView)findViewById(R.id.billing_period);
 		
-		ListView list = (ListView)findViewById(R.id.calltime_list);
+		final ListView list = (ListView)findViewById(R.id.calltime_list);
 
 		list.setOnItemClickListener(new OnItemClickListener() {
 
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Toast.makeText(getBaseContext(), "Position: " + position, Toast.LENGTH_SHORT).show();
+				Toast.makeText(getBaseContext(), ((TextView)view.findViewById(R.id.calltime_name)).getText(), Toast.LENGTH_SHORT).show();
+				
 				
 				Intent intent = new Intent(CalltimeActivity.this, ContactListActivity.class);
 				
-// TODO: HIER GEHTS WEITER!!! Alte Contactlist Activity umbauen und den Provider senden...				
-//			    EditText editText = (EditText) findViewById(R.id.calltime_name);
-//			    String message = editText.getText().toString();
-//			    intent.putExtra(EXTRA_MESSAGE, message);
+				TextView editText = ((TextView)view.findViewById(R.id.calltime_name));
+			    String message = editText.getText().toString();
+			    intent.putExtra(ContactListActivity.EXTRA_ROWNAME, message);
+
 			    startActivity(intent);
 				
 			}

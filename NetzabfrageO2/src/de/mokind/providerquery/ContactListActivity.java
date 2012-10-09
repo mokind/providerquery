@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.BaseColumns;
+import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.view.View;
@@ -16,6 +21,7 @@ import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
 import de.mokind.R;
 import de.mokind.providerquery.util.LoadList;
+import de.mokind.providerquery.util.Sum;
 
 /**
  * Main Activity class shows contact list and has main menu
@@ -24,6 +30,10 @@ import de.mokind.providerquery.util.LoadList;
  *
  */
 public class ContactListActivity extends Activity {
+	
+	public static final String EXTRA_ROWNAME = "ContactListActivity.RowName";
+	
+	private String rowName = null;
 	
 	private ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
 	
@@ -77,45 +87,17 @@ public class ContactListActivity extends Activity {
 		public boolean setViewValue(View view, Object data, String textRepresentation) {
 
 			if (data instanceof String && view instanceof TextView){
-				((TextView)view).setText(textRepresentation);
+				String name = getContactDisplayNameByNumber(textRepresentation);
+				if (name != null){
+					((TextView)view).setText(name + "\n(" + textRepresentation + ")");
+				}else{				
+					((TextView)view).setText(textRepresentation);
+				}
+
+			}else if (data instanceof Sum && view instanceof TextView) {
+				Sum sum = (Sum)data;
+				((TextView)view).setText(sum.getMinutes() + " Minuten");
 			}
-//			}else if (data instanceof Sum && view instanceof TextView) {
-//				Sum sum = (Sum)data;
-//				if (sum.showProgress){
-//					((TextView)view).setText(sum.minutes + " von " + sum.minutesMax + " Minuten");
-//				}else{
-//					((TextView)view).setText(sum.minutes + " Minuten");
-//				}
-//			}else if (data instanceof Sum && view instanceof ProgressBar){
-//				ProgressBar prog = (ProgressBar)view;
-//				Sum sum = (Sum)data;
-//				prog.setVisibility(sum.showProgress ? View.VISIBLE : View.GONE );
-//				prog.setMax(sum.minutesMax);
-//				prog.setProgress(sum.minutes);
-//			}else if (view.getId() == R.id.calltime_provider_logo){
-//				view.setVisibility(View.GONE);
-//			}else if (view.getId() == R.id.calltime_sum_icon){
-//				if(LoadList.ROW_FREE_MINUTES.equals(textRepresentation)){
-//					((ImageView)view).setImageResource(R.drawable.icon_minutepack_2);
-//					view.setVisibility(View.VISIBLE);
-//				}else if (LoadList.ROW_FLATRATE.equals(textRepresentation)){
-//					((ImageView)view).setImageResource(R.drawable.icon_flatrate);
-//					view.setVisibility(View.VISIBLE);
-//				}else{
-//					int image = NetworkDatabase.getLogoSmall(textRepresentation);
-//					if (image != -1){
-//						((ImageView)view).setImageResource(image);
-//						view.setVisibility(View.VISIBLE);
-//					}else {
-//						if(LoadList.ROW_LANDLINE.equals(textRepresentation)){
-//							((ImageView)view).setImageResource(R.drawable.logo_landline_small);
-//							view.setVisibility(View.VISIBLE);
-//						}else{
-//							view.setVisibility(View.GONE);
-//						}
-//					}
-//				}
-//			}
 			return true;
 		}
 	}
@@ -135,8 +117,11 @@ public class ContactListActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.contact_list);
+        rowName = getIntent().getStringExtra(EXTRA_ROWNAME);
         
         ListView contactList = (ListView) findViewById(R.id.contact_list);
+        ((TextView) findViewById(R.id.contact_list_header)).setText(rowName);
+        
         
 //        Cursor groupCursor = managedQuery( Contacts.CONTENT_URI,
 //        		CONTACTS_PROJECTION, 
@@ -146,7 +131,7 @@ public class ContactListActivity extends Activity {
         
         
      // list
-        dataArray = LoadList.loadList(this);
+        dataArray = LoadList.getDataArray(this, rowName);
  		dataAdapter = new SimpleAdapter(this, 
  				dataArray, 
  				R.layout.contact_entry, 
@@ -159,23 +144,32 @@ public class ContactListActivity extends Activity {
  		MyContentObserver contentObserver = new MyContentObserver(new Handler());
 
  	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
-        		
-//        		
-//        		new ContactListAdapter(this,
-//        		groupCursor, 
-//        		R.layout.contact_entry, 
-//        		new String[] { Contacts.DISPLAY_NAME },
-//        		new int[] { R.id.contact_name_text}, 
-//        		R.layout.contact_numbers,
-//        		new String[] { Phone.NUMBER },
-//        		new int[] { R.id.contact_number_text });
-
-        
        
     }
 
     
-    
+    public String getContactDisplayNameByNumber(String number) {
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+        String name = null;
+
+        ContentResolver contentResolver = getContentResolver();
+        Cursor contactLookup = contentResolver.query(uri, new String[] {BaseColumns._ID,
+                ContactsContract.PhoneLookup.DISPLAY_NAME }, null, null, null);
+
+        try {
+            if (contactLookup != null && contactLookup.getCount() > 0) {
+                contactLookup.moveToNext();
+                name = contactLookup.getString(contactLookup.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
+                //String contactId = contactLookup.getString(contactLookup.getColumnIndex(BaseColumns._ID));
+            }
+        } finally {
+            if (contactLookup != null) {
+                contactLookup.close();
+            }
+        }
+
+        return name;
+    }
 
 
     
