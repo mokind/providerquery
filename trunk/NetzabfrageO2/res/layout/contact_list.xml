@@ -4,6 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:weightSum="1">
+    <TextView android:text="Flatrate" android:id="@+id/contact_list_header" android:layout_width="fill_parent" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" ></TextView>
     <ListView
     	android:id="@+id/contact_list" 
     	android:layout_height="wrap_content"
