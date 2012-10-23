@@ -31,6 +31,9 @@ public class Sum implements Comparable<Sum>{
 	 * @see Comparable
 	 */
 	public int compareTo(Sum another) {
+		if (another.minutes == minutes && name != null && another.name != null){
+			return another.name.compareTo(name);
+		}
 		return another.minutes - minutes;
 	}
 	

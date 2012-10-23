@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -12,9 +13,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.Contacts;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
@@ -36,23 +37,6 @@ public class ContactListActivity extends Activity {
 	private String rowName = null;
 	
 	private ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
-	
-	/*
-	 * constants
-	 */
-	
-    private static final String[] PHONE_NUMBER_PROJECTION = new String[] {
-        Phone._ID,
-        Phone.NUMBER
-    };
-    
-	private static final String[] CONTACTS_PROJECTION = new String[] {
-        Contacts._ID,
-        Contacts.DISPLAY_NAME
-    };
-	
-	
-
 	
 	/*********** Types **********************/
 	
@@ -83,17 +67,35 @@ public class ContactListActivity extends Activity {
 	 *
 	 */
 	private class MyViewBinder implements ViewBinder{
+		
+		private HashMap<String, String> nameCache = new HashMap<String, String>();
+		private HashMap<String, Uri> photoCache = new HashMap<String, Uri>();
 
 		public boolean setViewValue(View view, Object data, String textRepresentation) {
 
-			if (data instanceof String && view instanceof TextView){
-				String name = getContactDisplayNameByNumber(textRepresentation);
+			if (data instanceof String && view instanceof ImageView){
+				Uri photoUri = photoCache.get(textRepresentation);
+				if (photoUri == null){
+					photoUri = getContactPhotoByNumber(textRepresentation);
+					photoCache.put(textRepresentation, photoUri);
+				}
+				if (photoUri != null){
+					((ImageView)view).setImageURI(photoUri);
+				}else{				
+					((ImageView)view).setImageResource(R.drawable.ic_menu_allfriends);
+				}
+			}else if (data instanceof String && view instanceof TextView){
+				
+				String name = nameCache.get(textRepresentation);
+				if (name == null){
+					name = getContactDisplayNameByNumber(textRepresentation);
+					nameCache.put(textRepresentation, name);
+				}
 				if (name != null){
 					((TextView)view).setText(name + "\n(" + textRepresentation + ")");
 				}else{				
 					((TextView)view).setText(textRepresentation);
 				}
-
 			}else if (data instanceof Sum && view instanceof TextView) {
 				Sum sum = (Sum)data;
 				((TextView)view).setText(sum.getMinutes() + " Minuten");
@@ -122,21 +124,14 @@ public class ContactListActivity extends Activity {
         ListView contactList = (ListView) findViewById(R.id.contact_list);
         ((TextView) findViewById(R.id.contact_list_header)).setText(rowName);
         
-        
-//        Cursor groupCursor = managedQuery( Contacts.CONTENT_URI,
-//        		CONTACTS_PROJECTION, 
-//        		Contacts.HAS_PHONE_NUMBER + "=1 AND " + ContactsContract.Contacts.IN_VISIBLE_GROUP + "=1", 
-//        		null, 
-//        		Contacts.DISPLAY_NAME);
-        
-        
-     // list
+        // list
         dataArray = LoadList.getDataArray(this, rowName);
+        
  		dataAdapter = new SimpleAdapter(this, 
  				dataArray, 
  				R.layout.contact_entry, 
- 				new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES}, 
- 				new int[]{R.id.contact_name_text, R.id.contact_call_time,});
+ 				new String [] {LoadList.KEY_NAME, LoadList.KEY_NAME, LoadList.KEY_MINUTES}, 
+ 				new int[]{R.id.contact_photo, R.id.contact_name_text, R.id.contact_call_time,});
  		dataAdapter.setViewBinder(new MyViewBinder());
  		
  		contactList.setAdapter(dataAdapter);
@@ -146,31 +141,47 @@ public class ContactListActivity extends Activity {
  	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
        
     }
-
     
-    public String getContactDisplayNameByNumber(String number) {
-        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
-        String name = null;
-
-        ContentResolver contentResolver = getContentResolver();
-        Cursor contactLookup = contentResolver.query(uri, new String[] {BaseColumns._ID,
-                ContactsContract.PhoneLookup.DISPLAY_NAME }, null, null, null);
-
+    private Uri getContactPhotoByNumber(String number) {
+    	Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+    	
+        ContentResolver cr = getContentResolver();
+        Cursor cur = cr.query(uri, new String[] {ContactsContract.PhoneLookup._ID,
+                ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_ID }, null, null, null);
         try {
-            if (contactLookup != null && contactLookup.getCount() > 0) {
-                contactLookup.moveToNext();
-                name = contactLookup.getString(contactLookup.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
+            if (cur != null && cur.getCount() > 0) {
+				cur.moveToFirst();
+				// get photo
+				int photoID = cur.getInt(cur.getColumnIndex(ContactsContract.PhoneLookup.PHOTO_ID));
+				Uri photoUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, photoID);
+				return photoUri;
+            }
+        } finally {
+			if (cur != null) {
+				cur.close();
+			}
+        }
+        return null;
+    }
+    
+    private String getContactDisplayNameByNumber(String number) {
+    	String name = null;
+    	Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(number));
+        ContentResolver cr = getContentResolver();
+        Cursor cur = cr.query(uri, new String[] {BaseColumns._ID,
+                ContactsContract.PhoneLookup.DISPLAY_NAME, ContactsContract.PhoneLookup.PHOTO_ID }, null, null, null);
+        try {
+            if (cur != null && cur.getCount() > 0) {
+                cur.moveToFirst();
+                name = cur.getString(cur.getColumnIndex(ContactsContract.Data.DISPLAY_NAME));
                 //String contactId = contactLookup.getString(contactLookup.getColumnIndex(BaseColumns._ID));
             }
         } finally {
-            if (contactLookup != null) {
-                contactLookup.close();
+            if (cur != null) {
+                cur.close();
             }
         }
-
         return name;
     }
-
-
     
 }

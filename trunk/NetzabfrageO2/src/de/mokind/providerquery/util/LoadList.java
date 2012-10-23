@@ -6,6 +6,7 @@ package de.mokind.providerquery.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -230,7 +231,12 @@ public abstract class LoadList {
 			}
 		}
 		if (myData != null){
-			for (Sum sum: myData.values()){
+			ArrayList<Sum> dataList = new ArrayList<Sum>(myData.values().size());
+			dataList.addAll(myData.values());
+			if (provider != null){
+				Collections.sort(dataList);
+			}
+			for (Sum sum: dataList){
 				HashMap<String, Object> row = new HashMap<String, Object>();
 				row.put(KEY_NAME, sum.getName());
 				row.put(KEY_MINUTES, sum);
