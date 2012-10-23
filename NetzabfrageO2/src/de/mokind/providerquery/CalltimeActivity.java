@@ -21,7 +21,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
@@ -47,10 +49,9 @@ public class CalltimeActivity extends Activity {
 	
 	//Members
 	private Handler handler = new Handler();
-	
-	private ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
-	private SimpleAdapter dataAdapter;
+	private ListView list = null;
 	private TextView billingPediodView;
+	private ViewBinder binder = new MyViewBinder();
 	
 	/**
 	 * The view binder
@@ -118,67 +119,58 @@ public class CalltimeActivity extends Activity {
 
 		@Override
 		public void onChange(boolean selfChange) {
-			dataArray = LoadList.loadList(CalltimeActivity.this);
+			setAdapter(list);
 			billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(CalltimeActivity.this).getTime()) + " bis heute");
-			dataAdapter.notifyDataSetChanged();
 	        super.onChange(selfChange);
 		}
 	 }
 
+	@Override
+	protected void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+//		onStart();
+	}
 	
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onStart(){//(Bundle savedInstanceState) {
+//		super.onCreate(savedInstanceState);
+		super.onStart();
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		setContentView(R.layout.calltime_list);
 		billingPediodView = (TextView)findViewById(R.id.billing_period);
-		
-		final ListView list = (ListView)findViewById(R.id.calltime_list);
-
+		list = (ListView)findViewById(R.id.calltime_list);
 		list.setOnItemClickListener(new OnItemClickListener() {
-
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Toast.makeText(getBaseContext(), ((TextView)view.findViewById(R.id.calltime_name)).getText(), Toast.LENGTH_SHORT).show();
-				
-				
 				Intent intent = new Intent(CalltimeActivity.this, ContactListActivity.class);
-				
 				TextView editText = ((TextView)view.findViewById(R.id.calltime_name));
 			    String message = editText.getText().toString();
 			    intent.putExtra(ContactListActivity.EXTRA_ROWNAME, message);
-
 			    startActivity(intent);
-				
 			}
-
         });
 
 		
 		// list
-		dataArray = LoadList.loadList(this);
+
 		billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(this).getTime()) + " bis heute");
-		dataAdapter = new SimpleAdapter(this, 
-				dataArray, 
-				R.layout.calltime_entry, 
-				new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME, LoadList.KEY_NAME}, 
-				new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_provider_logo,R.id.calltime_sum_icon});
-		dataAdapter.setViewBinder(new MyViewBinder());
 		
-		list.setAdapter(dataAdapter);
+		setAdapter(list);
 		
 		MyContentObserver contentObserver = new MyContentObserver(handler);
 
 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
 	}
 	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		dataArray = LoadList.loadList(this);
-		billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(this).getTime()) + " bis heute");
-		dataAdapter.notifyDataSetChanged();
+	private void setAdapter(ListView list){
+		SimpleAdapter dataAdapter = new SimpleAdapter(this, 
+				LoadList.loadList(this), 
+				R.layout.calltime_entry, 
+				new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME, LoadList.KEY_NAME}, 
+				new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_provider_logo,R.id.calltime_sum_icon});
+		dataAdapter.setViewBinder(binder);
+		list.setAdapter(dataAdapter);
 	}
-	
 	
 	
 	@Override
