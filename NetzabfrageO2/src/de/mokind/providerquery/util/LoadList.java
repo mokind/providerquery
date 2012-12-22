@@ -29,8 +29,11 @@ import de.mokind.providerquery.db.NetworkDatabase;
  */
 public abstract class LoadList {
 	
-	public static final String MY_PROVIDER = "o2";
-	public static final String[] OTHER_PROVIDERS = new String[]{"T-Mobile", "Vodafone", "E-Plus"};
+	public static final String PROVIDER_O2 = "o2";
+	public static final String PROVIDER_EPLUS = "E-Plus";
+	public static final String PROVIDER_D1 = "T-Mobile";
+	public static final String PROVIDER_D2 = "Vodafone";
+	public static final String[] PROVIDERS = new String[]{PROVIDER_O2, PROVIDER_D1, PROVIDER_D2, PROVIDER_EPLUS};
 	public static final String ROW_LANDLINE = "Festnetz (oder anderes Netz)";
 	public static final String ROW_UNKNOWN = "Unbekannt";
 	public static final String ROW_FREE_MINUTES = "Freiminuten";
@@ -90,7 +93,10 @@ public abstract class LoadList {
 		} catch (NumberFormatException e) {
 			Log.e(LoadList.class.getName(), "getList() Preference minute_pack ", e);
 		}
-		boolean ownFlatrate = prefs.getBoolean("flat_o2", true);
+		boolean flatrateO2 = prefs.getBoolean("flat_o2", true);
+		boolean flatrateEplus = prefs.getBoolean("flat_eplus", false);
+		boolean flatrateD1 = prefs.getBoolean("flat_d1", false);
+		boolean flatrateD2 = prefs.getBoolean("flat_d2", false);
 		boolean landlineFlatrate = prefs.getBoolean("flat_other", false);
 		
 				
@@ -155,26 +161,27 @@ public abstract class LoadList {
 		Sum freeSum = null;
 		Sum flatSum = null;
 		
-		if (ownFlatrate || landlineFlatrate || free_minutes > 0){
+		if (flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate || free_minutes > 0){
 			if (free_minutes > 0){
 				freeSum = new Sum (ROW_FREE_MINUTES, 0, free_minutes);
 			}
-			if (ownFlatrate || landlineFlatrate){
+			if (flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate){
 				flatSum = new Sum (ROW_FLATRATE, 0, 0);
 			}			
 			
-			ArrayList<String> otherProvider = new ArrayList<String>(Arrays.asList(OTHER_PROVIDERS));
+			ArrayList<String> provider = new ArrayList<String>(Arrays.asList(PROVIDERS));
 			for (Sum providerSum: data.values()){
-				if (otherProvider.contains(providerSum.getName()) && freeSum != null){
-					// other providers
-					freeSum.setMinutes( freeSum.getMinutes() + providerSum.getMinutes());
-					freeSum.getChildren().putAll(providerSum.getChildren());
-				}else if (MY_PROVIDER.equals(providerSum.getName())){
-						// my provider
-						if (ownFlatrate){
+				if (provider.contains(providerSum.getName())){
+						if (PROVIDER_O2.equals(providerSum.getName()) 	 && flatrateO2 ||
+							PROVIDER_EPLUS.equals(providerSum.getName()) && flatrateEplus || 
+							PROVIDER_D1.equals(providerSum.getName()) 	 && flatrateD1 ||
+							PROVIDER_D2.equals(providerSum.getName())    && flatrateD2)
+						{
+							// flatrate
 							flatSum.setMinutes(flatSum.getMinutes() + providerSum.getMinutes());
 							flatSum.getChildren().putAll(providerSum.getChildren());
 						}else if (freeSum != null){
+							// minute pack
 							freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
 							freeSum.getChildren().putAll(providerSum.getChildren());
 						}
@@ -185,7 +192,7 @@ public abstract class LoadList {
 					flatSum.setMinutes(flatSum.getMinutes() + providerSum.getMinutes());
 					flatSum.getChildren().putAll(providerSum.getChildren());
 				}else if (freeSum != null){
-					// landline minute pack
+					// minute pack
 					freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
 					freeSum.getChildren().putAll(providerSum.getChildren());
 				}
