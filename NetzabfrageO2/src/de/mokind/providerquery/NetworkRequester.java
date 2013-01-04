@@ -1,6 +1,7 @@
 package de.mokind.providerquery;
 
 import de.mokind.providerquery.db.NetworkDatabase;
+import de.mokind.providerquery.util.PrefUtils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -49,9 +50,17 @@ public class NetworkRequester {
      * @param context
      * @param phoneNumber
      */
-    public synchronized void requestNetwork(Context context, String phoneNumber){
+    public synchronized boolean requestNetwork(Context context, String phoneNumber){
+    	boolean doRequest = PrefUtils.isNumberCheckable(context, phoneNumber);
+ 
     	Log.d(this.getClass().getCanonicalName(), "requestNetwork()");
-    	if (allowedToSendSMS(context)){
+    	
+    	if (!doRequest){
+			Toast.makeText(context, "Nummer '" + phoneNumber + "' ist wahrscheinlich Service- oder Auslandsnummer\n(Siehe Einstellungen: Nummernerkennung)", Toast.LENGTH_LONG).show();
+			return false;
+		}
+    	
+    	if (doRequest && allowedToSendSMS(context)){
     		Log.d(this.getClass().getCanonicalName(), "requestNetwork(): waitingQueue.add(" + phoneNumber );
     		putStatus(context, phoneNumber, NetworkDatabase.STATUS_QUEUED);
     		doNextRequest(context);
@@ -59,6 +68,7 @@ public class NetworkRequester {
     		clearQueue(context);
     		Log.d(this.getClass().getCanonicalName(), "doNextRequest(): pendingPhoneNumber == " + null + " waitingQueue.clear()");
     	}
+    	return true;
     }
     
     /**
