@@ -36,6 +36,7 @@ public abstract class LoadList {
 	public static final String[] PROVIDERS = new String[]{PROVIDER_O2, PROVIDER_D1, PROVIDER_D2, PROVIDER_EPLUS};
 	public static final String ROW_LANDLINE = "Festnetz (oder anderes Netz)";
 	public static final String ROW_UNKNOWN = "Unbekannt";
+	public static final String ROW_UNCHECKED = "Ausland, bzw. Servicenummern";
 	public static final String ROW_FREE_MINUTES = "Freiminuten";
 	public static final String ROW_FLATRATE = "Flatrate";
 	
@@ -117,6 +118,8 @@ public abstract class LoadList {
 		}
 		// add unknown row
 		data.put(ROW_UNKNOWN, new Sum (ROW_UNKNOWN, 0, 0));
+		// add unchecked row
+		data.put(ROW_UNCHECKED, new Sum (ROW_UNCHECKED, 0, 0));
 	
 		// get call log data
 		Calendar cal = getBillingPeriodStart(context);
@@ -137,7 +140,12 @@ public abstract class LoadList {
 				int seconds = c.getInt(1) + 1; // + 1 is the value that O2 takes for billing
 				// TODO: Add 'Taktung'
 				int minutes = seconds / 60 + (seconds%60 > 0 ? 1 : 0);
-				String provider = db.getNetwork(number);
+				String provider = null;
+				if (!PrefUtils.isNumberCheckable(context, number)){
+					provider = ROW_UNCHECKED;
+				}else{
+					provider = db.getNetwork(number);
+				}
 				if (provider == null){
 					provider = ROW_UNKNOWN;
 				}

@@ -34,6 +34,7 @@ public class CallReceiver extends BroadcastReceiver {
 		String provider = null;
 		NetworkDatabase db = new NetworkDatabase(context);
 		provider = db.getNetwork(phoneNumber);
+		boolean showProvider = true;
 		
 		if (NetworkRequester.NO_PROVIDER_TEXT.equals(provider)){
 
@@ -49,7 +50,7 @@ public class CallReceiver extends BroadcastReceiver {
 					prefs.edit().commit();
 				}
 				if (new Date((new Date()).getTime() - lastAccess).getDate() > reRequestDelay){
-					NetworkRequester.getInstance().requestNetwork(context, phoneNumber);
+					showProvider = NetworkRequester.getInstance().requestNetwork(context, phoneNumber);
 				}
 			}
 		}else{
@@ -57,7 +58,9 @@ public class CallReceiver extends BroadcastReceiver {
 				NetworkRequester.getInstance().requestNetwork(context, phoneNumber);
 			}
 		}
-		CallReceiver.showProvider(context, phoneNumber, provider);
+		if (showProvider){
+			CallReceiver.showProvider(context, phoneNumber, provider);
+		}
 	}
 	
 	/**
