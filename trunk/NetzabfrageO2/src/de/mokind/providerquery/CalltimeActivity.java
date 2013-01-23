@@ -1,11 +1,10 @@
 package de.mokind.providerquery;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,9 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
@@ -39,6 +36,7 @@ import de.mokind.providerquery.util.Sum;
  * Activity to show call times summarized over network providers 
  * 
  * @author monsterkind
+ * @deprecated
  *
  */
 public class CalltimeActivity extends Activity {
@@ -52,6 +50,8 @@ public class CalltimeActivity extends Activity {
 	private ListView list = null;
 	private TextView billingPediodView;
 	private ViewBinder binder = new MyViewBinder();
+	
+	private View myContentView;
 	
 	/**
 	 * The view binder
@@ -77,8 +77,6 @@ public class CalltimeActivity extends Activity {
 				prog.setVisibility(sum.isShowProgress() ? View.VISIBLE : View.GONE );
 				prog.setMax(sum.getMinutesMax());
 				prog.setProgress(sum.getMinutes());
-			}else if (view.getId() == R.id.calltime_provider_logo){
-				view.setVisibility(View.GONE);
 			}else if (view.getId() == R.id.calltime_sum_icon){
 				if(LoadList.ROW_FREE_MINUTES.equals(textRepresentation)){
 					((ImageView)view).setImageResource(R.drawable.icon_minutepack_2);
@@ -119,8 +117,8 @@ public class CalltimeActivity extends Activity {
 
 		@Override
 		public void onChange(boolean selfChange) {
-			setAdapter(list);
-			billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(CalltimeActivity.this).getTime()) + " bis heute");
+			setAdapter(list, CalltimeActivity.this);
+			billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(CalltimeActivity.this, 0).getTime()) + " bis heute");
 	        super.onChange(selfChange);
 		}
 	 }
@@ -131,6 +129,17 @@ public class CalltimeActivity extends Activity {
 //		onStart();
 	}
 	
+	@Override
+	public void setContentView(View view) {
+		super.setContentView(view);
+		myContentView = view;
+	}
+	
+	
+	public View getMyContentView() {
+		return myContentView;
+	}
+
 	@Override
 	protected void onStart(){//(Bundle savedInstanceState) {
 //		super.onCreate(savedInstanceState);
@@ -153,23 +162,31 @@ public class CalltimeActivity extends Activity {
 		
 		// list
 
-		billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(this).getTime()) + " bis heute");
+		billingPediodView.setText("Rechnungszeitraum: von " + DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(this, 0).getTime()) + " bis heute");
 		
-		setAdapter(list);
+		setAdapter(list, this);
 		
 		MyContentObserver contentObserver = new MyContentObserver(handler);
 
 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
 	}
 	
-	private void setAdapter(ListView list){
-		SimpleAdapter dataAdapter = new SimpleAdapter(this, 
-				LoadList.loadList(this), 
-				R.layout.calltime_entry, 
-				new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME, LoadList.KEY_NAME}, 
-				new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_provider_logo,R.id.calltime_sum_icon});
-		dataAdapter.setViewBinder(binder);
-		list.setAdapter(dataAdapter);
+	private void setAdapter(final ListView list, final Context context){
+		LoadList.loadList(context, 0, new Runnable(){
+			public void run() {
+				list.post(new Runnable(){
+					public void run() {
+						final SimpleAdapter dataAdapter = new SimpleAdapter(context, 
+								LoadList.getDataArray(context, null, 0), 
+								R.layout.calltime_entry, 
+								new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME}, 
+								new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_sum_icon});
+						dataAdapter.setViewBinder(binder);
+						list.setAdapter(dataAdapter);
+					}
+				});
+			}
+		});
 	}
 	
 	

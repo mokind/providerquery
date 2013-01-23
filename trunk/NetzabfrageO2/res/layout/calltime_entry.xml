@@ -12,44 +12,38 @@
 		<ImageView android:src="@drawable/icon" 
 			  		android:layout_width="wrap_content" 
 			  		android:layout_height="fill_parent" 
-			  		android:layout_gravity="center" 
-			  		android:id="@+id/calltime_sum_icon" android:layout_margin="5dip"/>
+			  		android:layout_gravity="center"
+			  		android:id="@+id/calltime_sum_icon"
+			  		android:layout_marginLeft="4dip" 
+			  		android:layout_marginRight="4dip"/>
 	  	<LinearLayout
 		  xmlns:android="http://schemas.android.com/apk/res/android"
 		  android:orientation="vertical"
 		  
 		  android:layout_width="fill_parent"
-		  android:layout_height="fill_parent">
+		  android:layout_height="fill_parent"
+		  android:layout_marginLeft="4dip"
+		  android:layout_marginBottom="2dip">
 		  	
-			<LinearLayout
-			  xmlns:android="http://schemas.android.com/apk/res/android"
-			  android:orientation="horizontal"
-			  
-			  android:layout_width="fill_parent"
-			  android:layout_height="wrap_content">
-			  	<ImageView android:src="@drawable/icon" 
-			  		android:layout_width="wrap_content" 
-			  		android:layout_height="wrap_content" 
-			  		android:id="@+id/calltime_provider_logo" android:layout_margin="5dip"/>
-		    	<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
+	    	<TextView 
 		    		android:id="@+id/calltime_name" 
 		    		android:text="Network" 
 		    		android:layout_gravity="center_vertical" 
 		    		android:layout_width="fill_parent" 
 		    		android:layout_height="wrap_content"
-		    		android:layout_margin="5dip" />
-	   		</LinearLayout>	  
-	   		<TextView android:textAppearance="?android:attr/textAppearanceLarge" 
+		    		 />
+
+	   		<TextView android:textAppearance="?android:attr/textAppearanceMedium" 
 	   			android:id="@+id/calltime_value" 
 	   			android:layout_height="wrap_content" 
 	   			android:text="Duration" 
 	   			android:layout_gravity="right" 
-	   			android:layout_width="fill_parent" 
-	   			android:layout_margin="5dip"/>  	
+	   			android:layout_width="fill_parent"
+	   			 />  	
     	</LinearLayout>
     	    	
 	</LinearLayout>
 	
-    <ProgressBar android:id="@+id/calltime_progressbar" style="?android:attr/progressBarStyleHorizontal" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_margin="5dip"></ProgressBar>
+    <ProgressBar android:id="@+id/calltime_progressbar" style="?android:attr/progressBarStyleHorizontal" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_margin="4dip"></ProgressBar>
     
 </LinearLayout>

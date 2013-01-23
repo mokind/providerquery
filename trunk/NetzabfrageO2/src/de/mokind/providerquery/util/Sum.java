@@ -1,6 +1,5 @@
 package de.mokind.providerquery.util;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

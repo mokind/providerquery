@@ -6,14 +6,12 @@ import java.util.HashMap;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.Contacts;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -33,34 +31,40 @@ import de.mokind.providerquery.util.Sum;
 public class ContactListActivity extends Activity {
 	
 	public static final String EXTRA_ROWNAME = "ContactListActivity.RowName";
+	public static final String EXTRA_MONTHOFFSET = "ContactListActivity.MonthOffset";
 	
 	private String rowName = null;
+	private int monthOffset;
 	
-	private ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
+	public String getRowName() {
+		return rowName;
+	}
+
+	ArrayList< HashMap<String, Object> > dataArray = new ArrayList< HashMap<String, Object> >();
 	
 	/*********** Types **********************/
 	
-	/**
-	 * My {@link ContentObserver}
-	 * @author monsterkind
-	 *
+	public synchronized ArrayList<HashMap<String, Object>> getDataArray() {
+		return dataArray;
+	}
+
+	public synchronized void setDataArray(ArrayList<HashMap<String, Object>> dataArray) {
+		if (dataArray == null){
+			this.dataArray = new ArrayList<HashMap<String,Object>>(0);
+		}else{
+			this.dataArray = dataArray;
+		}
+	}
+	
+	/*
+	 * Member variables
 	 */
-	private class MyContentObserver extends ContentObserver {
+    private SimpleAdapter dataAdapter;
 
-//		@SuppressLint("ParserError")
-	    public MyContentObserver(Handler handler) {
-	    	super(handler);
-		}
+	public SimpleAdapter getDataAdapter() {
+		return dataAdapter;
+	}
 
-		@Override
-		public void onChange(boolean selfChange) {
-			dataArray = LoadList.loadList(ContactListActivity.this);
-			dataAdapter.notifyDataSetChanged();
-	        super.onChange(selfChange);
-		}
-	 }
-	
-	
 	/**
 	 * The view binder
 	 * @author monsterkind
@@ -106,11 +110,6 @@ public class ContactListActivity extends Activity {
 	
 	/****************************************/
  
-	/*
-	 * Member variables
-	 */
-    private SimpleAdapter dataAdapter;
-
     /*
      * (non-Javadoc)
      * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -120,25 +119,28 @@ public class ContactListActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.contact_list);
         rowName = getIntent().getStringExtra(EXTRA_ROWNAME);
-        
+        monthOffset = getIntent().getIntExtra(EXTRA_MONTHOFFSET, 0);
         ListView contactList = (ListView) findViewById(R.id.contact_list);
         ((TextView) findViewById(R.id.contact_list_header)).setText(rowName);
         
         // list
-        dataArray = LoadList.getDataArray(this, rowName);
+        Log.d(this.getClass().getName(), "getDataArray("+ rowName+") [START]");
+        setDataArray(LoadList.getDataArray(this, rowName, monthOffset));
+        Log.d(this.getClass().getName(), "getDataArray("+ rowName+") [DONE]");
         
+        Log.d(this.getClass().getName(), "prepare adapter and binder [START]");
  		dataAdapter = new SimpleAdapter(this, 
- 				dataArray, 
+ 				getDataArray(), 
  				R.layout.contact_entry, 
  				new String [] {LoadList.KEY_NAME, LoadList.KEY_NAME, LoadList.KEY_MINUTES}, 
  				new int[]{R.id.contact_photo, R.id.contact_name_text, R.id.contact_call_time,});
  		dataAdapter.setViewBinder(new MyViewBinder());
  		
  		contactList.setAdapter(dataAdapter);
- 		
- 		MyContentObserver contentObserver = new MyContentObserver(new Handler());
+ 		Log.d(this.getClass().getName(), "adapter and binder set [DONE]");
+// 		MyContentObserver contentObserver = new MyContentObserver(this, new Handler());
 
- 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
+// 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
        
     }
     
@@ -153,6 +155,9 @@ public class ContactListActivity extends Activity {
 				cur.moveToFirst();
 				// get photo
 				int photoID = cur.getInt(cur.getColumnIndex(ContactsContract.PhoneLookup.PHOTO_ID));
+				if (photoID == 0){
+					return null;
+				}
 				Uri photoUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, photoID);
 				return photoUri;
             }
