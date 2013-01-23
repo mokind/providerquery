@@ -4,16 +4,25 @@
   android:orientation="vertical"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent">
-    <TextView android:text="TextView" android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/billing_period"></TextView>
+    <TextView 
+        android:textAppearance="?android:attr/textAppearanceSmall" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:text="@string/billing_period"
+        android:id="@+id/billing_period_label"></TextView>
+    <TextView 
+        android:textAppearance="?android:attr/textAppearanceMedium" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:id="@+id/billing_period"></TextView>
+    <View
+	    android:layout_width="fill_parent"
+	    android:layout_height="1dp"
+	    android:background="@android:color/white"
+	    android:layout_margin="2dip" />
     <ListView android:layout_weight="1" 
     	android:id="@+id/calltime_list" 
-    	android:layout_height="fill_parent" 
-    	android:layout_width="fill_parent"></ListView>
-    <TextView android:text="Alle Angaben ohne Gewähr." android:layout_width="fill_parent" android:layout_height="wrap_content" android:gravity="right"></TextView>    
-    <LinearLayout
-		  android:orientation="horizontal"
-		  android:layout_width="wrap_content"
-		  android:layout_height="wrap_content">
-    </LinearLayout>
+    	android:layout_height="0dip" 
+    	android:layout_width="fill_parent"/>
     
 </LinearLayout>

@@ -114,7 +114,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 
 	private static void registerAlarm(Context context, long timeInMillis){
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (prefs.getBoolean(CalltimeActivity.PREFS_KEY_REQUEST_ALL, false)){
+		if (prefs.getBoolean(MainActivity.PREFS_KEY_REQUEST_ALL, false)){
 
 			Intent intent = new Intent(context, AlarmReceiver.class);
 
