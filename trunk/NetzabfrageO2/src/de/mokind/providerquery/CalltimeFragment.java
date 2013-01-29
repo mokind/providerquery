@@ -43,7 +43,7 @@ public class CalltimeFragment extends Fragment {
 	//Members
 	private Handler handler = new Handler();
 	private ListView list = null;
-	private TextView billingPediodView;
+	private TextView billingPeriodView;
 	private ViewBinder binder = new MyViewBinder();
 
     /**
@@ -69,11 +69,12 @@ public class CalltimeFragment extends Fragment {
         // Inflate the layout containing a title and body text.
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.calltime_list, container, false);
 
-  		billingPediodView = (TextView)rootView.findViewById(R.id.billing_period);
+  		billingPeriodView = (TextView)rootView.findViewById(R.id.billing_period);
   		list = (ListView)rootView.findViewById(R.id.calltime_list);
     	
   		if (getActivity() != null){
   			init();
+  			update();
   		}
   		
         return rootView;
@@ -92,16 +93,16 @@ public class CalltimeFragment extends Fragment {
   			}
           });
 
-  		
-  		// list
-
-  		billingPediodView.setText(getBillingText());
-  		
-  		setAdapter(list, getActivity());
-  		
+  		 		
   		MyContentObserver contentObserver = new MyContentObserver(handler);
 
   		getActivity().getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
+    }
+    
+    private void update(){
+  		billingPeriodView.setText(getBillingText());
+  		
+  		setAdapter(list, getActivity());
     }
     
     /**
@@ -112,6 +113,7 @@ public class CalltimeFragment extends Fragment {
         super.onAttach(activity);
         if (list != null){
         	init();
+        	update();
         }
     }
     
@@ -184,18 +186,13 @@ public class CalltimeFragment extends Fragment {
   	 */
   	private class MyContentObserver extends ContentObserver {
 
-//  		@SuppressLint("ParserError")
   	    public MyContentObserver(Handler handler) {
   	    	super(handler);
   		}
 
   		@Override
   		public void onChange(boolean selfChange) {
-  			if (getActivity() == null){
-  				return;
-  			}
-  			setAdapter(list, getActivity());
-  			billingPediodView.setText(getBillingText());
+  			update();
   	        super.onChange(selfChange);
   		}
   	 }

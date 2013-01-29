@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.mokind.R;
 import de.mokind.providerquery.db.NetworkDatabase;
+import de.mokind.providerquery.util.PrefUtils;
 
 public class CallReceiver extends BroadcastReceiver {
 
@@ -29,6 +30,8 @@ public class CallReceiver extends BroadcastReceiver {
 		boolean reRequest = prefs.getBoolean("ReRequest", true);
 		
 		String phoneNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
+		
+		boolean requestable = PrefUtils.isNumberCheckable(context, phoneNumber);
 
 		// get provider
 		String provider = null;
@@ -54,12 +57,12 @@ public class CallReceiver extends BroadcastReceiver {
 				}
 			}
 		}else{
-			if (autoRequest){
+			if (autoRequest && requestable){
 				NetworkRequester.getInstance().requestNetwork(context, phoneNumber);
 			}
 		}
 		if (showProvider){
-			CallReceiver.showProvider(context, phoneNumber, provider);
+			CallReceiver.showProvider(context, phoneNumber, provider, requestable);
 		}
 	}
 	
@@ -68,15 +71,19 @@ public class CallReceiver extends BroadcastReceiver {
 	 * @param context
 	 * @param provider
 	 */
-	public static void showProvider(Context context, String number, String provider){
+	public static void showProvider(Context context, String number, String provider, boolean requestable){
 		
 		String txt = null;
-		if (NetworkRequester.NO_PROVIDER_TEXT.equals(provider)){
-			txt = "Festnetz (vermutlich)";
-		}else if (provider != null){
-			txt = provider;
+		if (!requestable){
+			txt = "Auslands-, bzw. Servicenummer";
 		}else{
-			txt = "Netz (noch) unbekannt...";
+			if (NetworkRequester.NO_PROVIDER_TEXT.equals(provider)){
+				txt = "Festnetz (vermutlich)";
+			}else if (provider != null){
+				txt = provider;
+			}else{
+				txt = "Netz (noch) unbekannt...";
+			}
 		}
 		if (number != null){
 			txt = number + "\n" + txt;
