@@ -161,7 +161,7 @@ public class NetworkRequester {
 		                str += "\"";   
 		            	Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
 		            }else{
-		            	CallReceiver.showProvider(context, phoneNumber, provider);
+		            	CallReceiver.showProvider(context, phoneNumber, provider, true);
 		            }
 	            }else{
 	            	putStatus(context, phoneNumber, NetworkDatabase.STATUS_QUEUED);

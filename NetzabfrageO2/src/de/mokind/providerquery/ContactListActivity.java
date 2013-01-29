@@ -6,6 +6,7 @@ import java.util.HashMap;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,11 +14,14 @@ import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
+import android.widget.Toast;
 import de.mokind.R;
 import de.mokind.providerquery.util.LoadList;
 import de.mokind.providerquery.util.Sum;
@@ -141,6 +145,21 @@ public class ContactListActivity extends Activity {
 // 		MyContentObserver contentObserver = new MyContentObserver(this, new Handler());
 
 // 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
+ 		
+ 		contactList.setOnItemClickListener(new OnItemClickListener() {
+  			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+  				
+  				@SuppressWarnings("unchecked")
+				HashMap<String, Object> item = (HashMap<String, Object>)dataAdapter.getItem(position);
+  				
+  				String number = (String) item.get(LoadList.KEY_NAME);
+  				
+  				Uri contactUri = Uri.parse(String.format("tel: %s", number));
+  				Intent addContactIntent = new Intent(
+  				                ContactsContract.Intents.SHOW_OR_CREATE_CONTACT, contactUri); 
+  				startActivity(addContactIntent);
+  			}
+          });
        
     }
     
