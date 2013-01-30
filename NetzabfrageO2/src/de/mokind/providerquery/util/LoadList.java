@@ -220,40 +220,40 @@ public abstract class LoadList {
 					}
 					
 					// SMS
-//					c = context.getContentResolver().query( 
-//							Uri.parse("content://sms/sent"), 
-//			                new String[]{"address"},
-//			                " date > ? AND date <= ? ",
-//			                new String[]{calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
-//			                " date DESC"); 
-//					if (c.getCount() > 0){
-//						do {
-//							c.moveToNext();
-//							String number = c.getString(0);
-//							String provider = null;
-//							if (!PrefUtils.isNumberCheckable(context, number)){
-//								provider = ROW_UNCHECKED;
-//							}else{
-//								provider = db.getNetwork(number);
-//							}
-//							if (provider == null){
-//								provider = ROW_UNKNOWN;
-//							}
-//							Sum sum = data.get(provider);
-//							if (sum != null){
-//								sum.setSmsCount(1 + sum.getSmsCount());
-//								Sum numberSum = sum.getChildren().get(number);
-//								if (numberSum == null){
-//									numberSum = new Sum(number, 0, -1);
-//									sum.getChildren().put(number, numberSum);
-//								}
-//								numberSum.setSmsCount(numberSum.getSmsCount() + 1);							
-//							}else{
-//								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
-//							}
-//							
-//						}while (!c.isLast());
-//					}
+					c = context.getContentResolver().query( 
+							Uri.parse("content://sms/sent"), 
+			                new String[]{"address"},
+			                " date > ? AND date <= ? ",
+			                new String[]{calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
+			                " date DESC"); 
+					if (c.getCount() > 0){
+						do {
+							c.moveToNext();
+							String number = c.getString(0).replaceAll(" ", "");
+							String provider = null;
+							if (!PrefUtils.isNumberCheckable(context, number)){
+								provider = ROW_UNCHECKED;
+							}else{
+								provider = db.getNetwork(number);
+							}
+							if (provider == null){
+								provider = ROW_UNKNOWN;
+							}
+							Sum sum = data.get(provider);
+							if (sum != null){
+								sum.setSmsCount(1 + sum.getSmsCount());
+								Sum numberSum = sum.getChildren().get(number);
+								if (numberSum == null){
+									numberSum = new Sum(number, 0, -1);
+									sum.getChildren().put(number, numberSum);
+								}
+								numberSum.setSmsCount(numberSum.getSmsCount() + 1);							
+							}else{
+								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
+							}
+							
+						}while (!c.isLast());
+					}
 					
 					// sum up flatrates and minute packs
 					Sum freeSum = null;
