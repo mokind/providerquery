@@ -8,7 +8,9 @@ public class Sum implements Comparable<Sum>{
 	private String name;
 	private Integer minutes = 0;
 	private Integer minutesMax = 0;
-	
+	private Integer smsCount = 0;
+	private Integer smsMax = 0;
+
 	private Map<String, Sum> children = new LinkedHashMap<String, Sum>();
 	
 	public Sum(String name, Integer minutes, Integer minutesMax) {
@@ -77,6 +79,34 @@ public class Sum implements Comparable<Sum>{
 
 	public void setChildren(Map<String, Sum> children) {
 		this.children = children;
+	}
+	
+	
+	public Integer getSmsCount() {
+		return smsCount;
+	}
+
+	public void setSmsCount(Integer smsCount) {
+		this.smsCount = smsCount;
+	}
+	
+	public Integer getSummarizedSmsCount() {
+		int minCount = 0;
+		if (children == null){
+			return getSmsCount();
+		}
+		for (Sum s: children.values()){
+			minCount += s.getSmsCount();
+		}
+		return minCount;
+	}
+
+	public Integer getSmsMax() {
+		return smsMax;
+	}
+
+	public void setSmsMax(Integer smsMax) {
+		this.smsMax = smsMax;
 	}
 	
 	

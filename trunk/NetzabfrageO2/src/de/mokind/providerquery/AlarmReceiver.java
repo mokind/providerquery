@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import de.mokind.providerquery.db.NetworkDatabase;
+import de.mokind.providerquery.util.PrefUtils;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -33,7 +34,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		try {
 			billingPeriodStart = Integer.parseInt(prefs.getString("billing_period_start", "1"));
 		} catch (NumberFormatException e) {
-			Log.e(this.getClass().getName(), "getList() Preference billing_period_start ", e);
+			Log.e(PrefUtils.LOG_TAG, "getList() Preference billing_period_start ", e);
 		}
 		Calendar cal = new GregorianCalendar();
 		if (cal.get(Calendar.DAY_OF_MONTH) < billingPeriodStart){

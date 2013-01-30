@@ -15,6 +15,7 @@ import java.util.Map;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
@@ -44,6 +45,7 @@ public abstract class LoadList {
 	public static final String KEY_NAME = "name";
 	public static final String KEY_MINUTES = "duration";
 	public static final String KEY_PROGRESS = "progress";
+	public static final String KEY_SMS = "sms";
 
 	private static SparseArray<Map<String, Sum>> dataArray = null;
 	
@@ -79,13 +81,13 @@ public abstract class LoadList {
 	 * @return
 	 */
 	public static Calendar getBillingPeriod(Context context, int monthOffset, boolean start){
-		Log.d(LoadList.class.getSimpleName(), "getBillingPeriod(" + context + "," + monthOffset + "," + start + ")");
+		Log.d(PrefUtils.LOG_TAG, "getBillingPeriod(" + context + "," + monthOffset + "," + start + ")");
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		int billingPeriodStart = 1;
 		try {
 			billingPeriodStart = Integer.parseInt(prefs.getString("billing_period_start", "5"));
 		} catch (NumberFormatException e) {
-			Log.e(LoadList.class.getClass().getName(), "getList() Preference billing_period_start ", e);
+			Log.e(PrefUtils.LOG_TAG, "getList() Preference billing_period_start ", e);
 		}
 		Calendar cal = new GregorianCalendar();
 		cal.add(Calendar.MONTH, monthOffset);
@@ -128,9 +130,9 @@ public abstract class LoadList {
 	 * @return
 	 */
 	public static void loadList(final Context context, final int monthOffset, final Runnable whenDone){
-		Log.d(LoadList.class.getSimpleName(), "loadList("+monthOffset+")");
+		Log.d(PrefUtils.LOG_TAG, "loadList("+monthOffset+")");
 		if (context == null){
-			Log.d(LoadList.class.getSimpleName(), "context == null !!");
+			Log.d(PrefUtils.LOG_TAG, "context == null !!");
 			return;
 		}
 			
@@ -147,7 +149,7 @@ public abstract class LoadList {
 					try {
 						free_minutes = Integer.parseInt(prefs.getString("free_minutes", "100"));
 					} catch (NumberFormatException e) {
-						Log.e(LoadList.class.getSimpleName(), "getList() Preference minute_pack ", e);
+						Log.e(PrefUtils.LOG_TAG, "getList() Preference minute_pack ", e);
 					}
 					boolean flatrateO2 = prefs.getBoolean("flat_o2", true);
 					boolean flatrateEplus = prefs.getBoolean("flat_eplus", false);
@@ -177,6 +179,7 @@ public abstract class LoadList {
 					Calendar calStart = getBillingPeriodStart(context, monthOffset);
 					Calendar calEnd = getBillingPeriodEnd(context, monthOffset);
 					
+					// sum up provider data with database contents
 					Cursor c = context.getContentResolver().query( 
 			                android.provider.CallLog.Calls.CONTENT_URI, 
 			                new String[]{android.provider.CallLog.Calls.NUMBER, android.provider.CallLog.Calls.DURATION},
@@ -184,7 +187,6 @@ public abstract class LoadList {
 			                new String[]{android.provider.CallLog.Calls.OUTGOING_TYPE + "", calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
 			                android.provider.CallLog.Calls.DATE + " DESC"); 
 					
-					// sum up provider data with database contents
 					if (c.getCount() > 0){
 						do {
 							c.moveToNext();
@@ -211,11 +213,47 @@ public abstract class LoadList {
 								}
 								numberSum.setMinutes(numberSum.getMinutes() + minutes);							
 							}else{
-								Log.e(LoadList.class.getSimpleName(), "getList() Provider unknown '" + provider + "'");
+								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
 							}
 							
 						}while (!c.isLast());
 					}
+					
+					// SMS
+//					c = context.getContentResolver().query( 
+//							Uri.parse("content://sms/sent"), 
+//			                new String[]{"address"},
+//			                " date > ? AND date <= ? ",
+//			                new String[]{calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
+//			                " date DESC"); 
+//					if (c.getCount() > 0){
+//						do {
+//							c.moveToNext();
+//							String number = c.getString(0);
+//							String provider = null;
+//							if (!PrefUtils.isNumberCheckable(context, number)){
+//								provider = ROW_UNCHECKED;
+//							}else{
+//								provider = db.getNetwork(number);
+//							}
+//							if (provider == null){
+//								provider = ROW_UNKNOWN;
+//							}
+//							Sum sum = data.get(provider);
+//							if (sum != null){
+//								sum.setSmsCount(1 + sum.getSmsCount());
+//								Sum numberSum = sum.getChildren().get(number);
+//								if (numberSum == null){
+//									numberSum = new Sum(number, 0, -1);
+//									sum.getChildren().put(number, numberSum);
+//								}
+//								numberSum.setSmsCount(numberSum.getSmsCount() + 1);							
+//							}else{
+//								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
+//							}
+//							
+//						}while (!c.isLast());
+//					}
 					
 					// sum up flatrates and minute packs
 					Sum freeSum = null;
@@ -272,7 +310,7 @@ public abstract class LoadList {
 						data.put(flatSum.getName(), flatSum);
 					}
 					data.putAll(tempdata);
-	
+					
 					if (whenDone != null){
 						whenDone.run();
 					}
@@ -293,7 +331,7 @@ public abstract class LoadList {
 	 * @return
 	 */
 	public static ArrayList< HashMap<String, Object> > getDataArray(Context context, String provider, int monthOffset){
-		Log.d(LoadList.class.getSimpleName(), "getDataArray(" + context + "," + provider + "," + monthOffset + ")");
+		Log.d(PrefUtils.LOG_TAG, "getDataArray(" + context + "," + provider + "," + monthOffset + ")");
 		Map<String, Sum> data = getData(monthOffset);
 		if (data == null){
 			return null;
@@ -322,6 +360,7 @@ public abstract class LoadList {
 					row.put(KEY_NAME, sum.getName());
 					row.put(KEY_MINUTES, sum);
 					row.put(KEY_PROGRESS, sum);
+					row.put(KEY_SMS, sum);
 					dataArray.add(row);
 				}
 			}
@@ -330,7 +369,7 @@ public abstract class LoadList {
 	}
 	
 	public static void releaseReferences(){
-		Log.d(LoadList.class.getSimpleName(), "releaseReferences(");
+		Log.d(PrefUtils.LOG_TAG, "releaseReferences(");
 		dataArray = null;
 	}
 

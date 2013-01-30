@@ -53,7 +53,7 @@ public class NetworkRequester {
     public synchronized boolean requestNetwork(Context context, String phoneNumber){
     	boolean doRequest = PrefUtils.isNumberCheckable(context, phoneNumber);
  
-    	Log.d(this.getClass().getCanonicalName(), "requestNetwork()");
+    	Log.d(PrefUtils.LOG_TAG, "requestNetwork()");
     	
     	if (!doRequest){
 			Toast.makeText(context, "Nummer '" + phoneNumber + "' ist wahrscheinlich Service- oder Auslandsnummer\n(Siehe Einstellungen: Nummernerkennung)", Toast.LENGTH_LONG).show();
@@ -61,12 +61,12 @@ public class NetworkRequester {
 		}
     	
     	if (doRequest && allowedToSendSMS(context)){
-    		Log.d(this.getClass().getCanonicalName(), "requestNetwork(): waitingQueue.add(" + phoneNumber );
+    		Log.d(PrefUtils.LOG_TAG, "requestNetwork(): waitingQueue.add(" + phoneNumber );
     		putStatus(context, phoneNumber, NetworkDatabase.STATUS_QUEUED);
     		doNextRequest(context);
     	}else{
     		clearQueue(context);
-    		Log.d(this.getClass().getCanonicalName(), "doNextRequest(): pendingPhoneNumber == " + null + " waitingQueue.clear()");
+    		Log.d(PrefUtils.LOG_TAG, "doNextRequest(): pendingPhoneNumber == " + null + " waitingQueue.clear()");
     	}
     	return true;
     }
@@ -85,7 +85,7 @@ public class NetworkRequester {
     }
     
     private synchronized void doNextRequest(Context context){
-    	Log.d(this.getClass().getCanonicalName(), "doNextRequest()");
+    	Log.d(PrefUtils.LOG_TAG, "doNextRequest()");
     	if (allowedToSendSMS(context)){
     		
     		NetworkDatabase db = new NetworkDatabase(context);
@@ -93,12 +93,12 @@ public class NetworkRequester {
         	String[] sendNumbers = db.getAllNumbers(NetworkDatabase.STATUS_SEND);
     		
         	if (sendNumbers != null){
-        		Log.d(this.getClass().getCanonicalName(), "sendNumbers == ");
+        		Log.d(PrefUtils.LOG_TAG, "sendNumbers == ");
         		for (String s: sendNumbers){
-        			Log.d(this.getClass().getCanonicalName(), s);
+        			Log.d(PrefUtils.LOG_TAG, s);
         		}
         	}else{
-        		Log.d(this.getClass().getCanonicalName(), "sendNumbers == null");
+        		Log.d(PrefUtils.LOG_TAG, "sendNumbers == null");
         	}
         	
 	    	if ((sendNumbers == null || sendNumbers.length == 0) && (queuedNumbers != null && queuedNumbers.length > 0)){
@@ -108,7 +108,7 @@ public class NetworkRequester {
 	    		boolean showSMS = prefs.getBoolean("ShowSMS", false);
 	    		
 	    		String phoneNumber = queuedNumbers[0];
-    			Log.d(this.getClass().getCanonicalName(), "requestNetwork(): queuedNumbers[0] = " + phoneNumber);
+    			Log.d(PrefUtils.LOG_TAG, "requestNetwork(): queuedNumbers[0] = " + phoneNumber);
 				putStatus(context, phoneNumber, NetworkDatabase.STATUS_SEND);
 				if (showSMS && context != null){
 					Toast.makeText(context, "Sende SMS an " + SMS_OUTGOING_NUMBER + " :\"" + SMS_OUTGOING_TEXT + phoneNumber + "\"", Toast.LENGTH_SHORT).show();
@@ -118,7 +118,7 @@ public class NetworkRequester {
 	    	}
     	}else{
     		clearQueue(context);
-    		Log.d(this.getClass().getCanonicalName(), "doNextRequest(): pendingPhoneNumber == " + null + " waitingQueue.clear()");
+    		Log.d(PrefUtils.LOG_TAG, "doNextRequest(): pendingPhoneNumber == " + null + " waitingQueue.clear()");
     	}
     }
     
@@ -136,7 +136,7 @@ public class NetworkRequester {
 	        	
 	    		// get necessary information
 	    		String phoneNumber = sendNumbers[0];
-	    		Log.d(this.getClass().getCanonicalName(), "pendingPhoneNumber read out, set to null (was " + phoneNumber + ")");
+	    		Log.d(PrefUtils.LOG_TAG, "pendingPhoneNumber read out, set to null (was " + phoneNumber + ")");
 	    		String msgBody = msg.getMessageBody().toString();
 	            
 	            // extract provider name

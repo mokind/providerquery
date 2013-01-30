@@ -48,7 +48,7 @@ public class CallReceiver extends BroadcastReceiver {
 				try {
 					reRequestDelay = prefs.getInt("ReRequestDelay", 5);
 				} catch (Exception e) {
-					Log.d(this.getClass().getName(), "onReceive("+context+", "+intent+") Wrong format ReRequestDelay, set to default" + 5);
+					Log.d(PrefUtils.LOG_TAG, "onReceive("+context+", "+intent+") Wrong format ReRequestDelay, set to default" + 5);
 					prefs.edit().putInt("ReRequestDelay", 5);
 					prefs.edit().commit();
 				}
