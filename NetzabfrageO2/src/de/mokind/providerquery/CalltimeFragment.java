@@ -45,6 +45,7 @@ public class CalltimeFragment extends Fragment {
 	private ListView list = null;
 	private TextView billingPeriodView;
 	private ViewBinder binder = new MyViewBinder();
+	private boolean initialized = false;
 
     /**
      * Factory method for this fragment class. Constructs a new fragment for the given page number.
@@ -72,37 +73,41 @@ public class CalltimeFragment extends Fragment {
   		billingPeriodView = (TextView)rootView.findViewById(R.id.billing_period);
   		list = (ListView)rootView.findViewById(R.id.calltime_list);
     	
-  		if (getActivity() != null){
+  		Context context = getActivity();
+  		if (context != null){
   			init();
-  			update();
+  			update(context);
   		}
   		
         return rootView;
     }
     
     private void init(){
-    	list.setOnItemClickListener(new OnItemClickListener() {
-  			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-  				Toast.makeText(getActivity(), ((TextView)view.findViewById(R.id.calltime_name)).getText(), Toast.LENGTH_SHORT).show();
-  				Intent intent = new Intent(getActivity(), ContactListActivity.class);
-  				TextView editText = ((TextView)view.findViewById(R.id.calltime_name));
-  			    String message = editText.getText().toString();
-  			    intent.putExtra(ContactListActivity.EXTRA_ROWNAME, message);
-  			    intent.putExtra(ContactListActivity.EXTRA_MONTHOFFSET, getMonthOffset());
-  			    startActivity(intent);
-  			}
-          });
-
-  		 		
-  		MyContentObserver contentObserver = new MyContentObserver(handler);
-
-  		getActivity().getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
+    	if (!initialized){
+	    	list.setOnItemClickListener(new OnItemClickListener() {
+	  			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+	  				Toast.makeText(getActivity(), ((TextView)view.findViewById(R.id.calltime_name)).getText(), Toast.LENGTH_SHORT).show();
+	  				Intent intent = new Intent(getActivity(), ContactListActivity.class);
+	  				TextView editText = ((TextView)view.findViewById(R.id.calltime_name));
+	  			    String message = editText.getText().toString();
+	  			    intent.putExtra(ContactListActivity.EXTRA_ROWNAME, message);
+	  			    intent.putExtra(ContactListActivity.EXTRA_MONTHOFFSET, getMonthOffset());
+	  			    startActivity(intent);
+	  			}
+	          });
+	
+	  		 		
+	  		MyContentObserver contentObserver = new MyContentObserver(handler, getActivity());
+	
+	  		getActivity().getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
+	  		
+	  		initialized = true;
+    	}
     }
     
-    private void update(){
-  		billingPeriodView.setText(getBillingText());
-  		
-  		setAdapter(list, getActivity());
+    private void update(Context context){
+    	billingPeriodView.setText(getBillingText(context));
+		setAdapter(list, context);  		
     }
     
     /**
@@ -113,7 +118,7 @@ public class CalltimeFragment extends Fragment {
         super.onAttach(activity);
         if (list != null){
         	init();
-        	update();
+        	update(activity);
         }
     }
     
@@ -140,12 +145,20 @@ public class CalltimeFragment extends Fragment {
   			}
   			if (data instanceof String && view instanceof TextView){
   				((TextView)view).setText(textRepresentation);
-  			}else if (data instanceof Sum && view instanceof TextView) {
+  			}else if (data instanceof Sum && view.getId() == R.id.calltime_value) {
   				Sum sum = (Sum)data;
   				if (sum.isShowProgress()){
   					((TextView)view).setText(sum.getMinutes() + " von " + sum.getMinutesMax() + " Minuten");
   				}else{
   					((TextView)view).setText(sum.getMinutes() + " Minuten");
+  				} 
+  			}else if (data instanceof Sum && view.getId() == R.id.calltime_smsount) {  // SMS
+  				Sum sum = (Sum)data;
+  				view.setVisibility((sum.getSmsCount() == 0) ? View.GONE : View.VISIBLE );
+  				if (sum.getSmsMax() > 0){
+  					((TextView)view).setText(sum.getSmsCount() + " von " + sum.getSmsMax() + " SMS");
+  				}else{
+					((TextView)view).setText(sum.getSmsCount() + " SMS");
   				}  				
   			}else if (data instanceof Sum && view instanceof ProgressBar){
   				ProgressBar prog = (ProgressBar)view;
@@ -185,23 +198,26 @@ public class CalltimeFragment extends Fragment {
   	 *
   	 */
   	private class MyContentObserver extends ContentObserver {
+  		
+  		private Context context = null;
 
-  	    public MyContentObserver(Handler handler) {
+  	    public MyContentObserver(Handler handler, Context context) {
   	    	super(handler);
+  	    	this.context = context;
   		}
 
   		@Override
   		public void onChange(boolean selfChange) {
-  			update();
+  			update(context);
   	        super.onChange(selfChange);
   		}
   	 }
 
-  	private String getBillingText(){
+  	private String getBillingText(Context context){
   		int monthOffset = getMonthOffset();
   		return "von " + 
-  				DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(getActivity(), monthOffset).getTime()) + 
-  				" bis " + (monthOffset==0?"heute":DateFormat.getDateInstance().format(LoadList.getBillingPeriodEnd(getActivity(), monthOffset).getTime()));
+  				DateFormat.getDateInstance().format(LoadList.getBillingPeriodStart(context, monthOffset).getTime()) + 
+  				" bis " + (monthOffset==0?"heute":DateFormat.getDateInstance().format(LoadList.getBillingPeriodEnd(context, monthOffset).getTime()));
   	}
   	
   	private int getMonthOffset(){
@@ -217,8 +233,8 @@ public class CalltimeFragment extends Fragment {
   						final SimpleAdapter dataAdapter = new SimpleAdapter(context, 
   								LoadList.getDataArray(context, null, getMonthOffset()), 
   								R.layout.calltime_entry, 
-  								new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME}, 
-  								new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_sum_icon});
+  								new String [] {LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_PROGRESS, LoadList.KEY_NAME, LoadList.KEY_SMS}, 
+  								new int[]{R.id.calltime_name, R.id.calltime_value,R.id.calltime_progressbar,R.id.calltime_sum_icon, R.id.calltime_smsount});
   						dataAdapter.setViewBinder(binder);
   						list.setAdapter(dataAdapter);
   					}

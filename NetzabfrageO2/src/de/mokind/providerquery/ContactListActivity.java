@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.mokind.R;
 import de.mokind.providerquery.util.LoadList;
+import de.mokind.providerquery.util.PrefUtils;
 import de.mokind.providerquery.util.Sum;
 
 /**
@@ -100,6 +101,7 @@ public class ContactListActivity extends Activity {
 					nameCache.put(textRepresentation, name);
 				}
 				if (name != null){
+					name = name.replaceAll("\n", "");
 					((TextView)view).setText(name + "\n(" + textRepresentation + ")");
 				}else{				
 					((TextView)view).setText(textRepresentation);
@@ -128,11 +130,11 @@ public class ContactListActivity extends Activity {
         ((TextView) findViewById(R.id.contact_list_header)).setText(rowName);
         
         // list
-        Log.d(this.getClass().getName(), "getDataArray("+ rowName+") [START]");
+        Log.d(PrefUtils.LOG_TAG, "getDataArray("+ rowName+") [START]");
         setDataArray(LoadList.getDataArray(this, rowName, monthOffset));
-        Log.d(this.getClass().getName(), "getDataArray("+ rowName+") [DONE]");
+        Log.d(PrefUtils.LOG_TAG, "getDataArray("+ rowName+") [DONE]");
         
-        Log.d(this.getClass().getName(), "prepare adapter and binder [START]");
+        Log.d(PrefUtils.LOG_TAG, "prepare adapter and binder [START]");
  		dataAdapter = new SimpleAdapter(this, 
  				getDataArray(), 
  				R.layout.contact_entry, 
@@ -141,7 +143,7 @@ public class ContactListActivity extends Activity {
  		dataAdapter.setViewBinder(new MyViewBinder());
  		
  		contactList.setAdapter(dataAdapter);
- 		Log.d(this.getClass().getName(), "adapter and binder set [DONE]");
+ 		Log.d(PrefUtils.LOG_TAG, "adapter and binder set [DONE]");
 // 		MyContentObserver contentObserver = new MyContentObserver(this, new Handler());
 
 // 	    this.getContentResolver().registerContentObserver (Contacts.CONTENT_URI, true, contentObserver);
