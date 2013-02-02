@@ -21,7 +21,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
-import android.widget.Toast;
 import de.mokind.R;
 import de.mokind.providerquery.util.LoadList;
 import de.mokind.providerquery.util.PrefUtils;
@@ -106,9 +105,14 @@ public class ContactListActivity extends Activity {
 				}else{				
 					((TextView)view).setText(textRepresentation);
 				}
-			}else if (data instanceof Sum && view instanceof TextView) {
+			}else if (data instanceof Sum) {
 				Sum sum = (Sum)data;
-				((TextView)view).setText(sum.getMinutes() + " Minuten");
+				if (view.getId() == R.id.contact_call_time){
+					((TextView)view).setText(sum.getMinutes() + " Minuten");
+				}else if (view.getId() == R.id.contact_SMS){
+					((TextView)view).setText(sum.getSmsCount() + " SMS");
+				}
+				
 			}
 			return true;
 		}
@@ -138,8 +142,8 @@ public class ContactListActivity extends Activity {
  		dataAdapter = new SimpleAdapter(this, 
  				getDataArray(), 
  				R.layout.contact_entry, 
- 				new String [] {LoadList.KEY_NAME, LoadList.KEY_NAME, LoadList.KEY_MINUTES}, 
- 				new int[]{R.id.contact_photo, R.id.contact_name_text, R.id.contact_call_time,});
+ 				new String [] {LoadList.KEY_NAME, LoadList.KEY_NAME, LoadList.KEY_MINUTES, LoadList.KEY_SMS}, 
+ 				new int[]{R.id.contact_photo, R.id.contact_name_text, R.id.contact_call_time, R.id.contact_SMS});
  		dataAdapter.setViewBinder(new MyViewBinder());
  		
  		contactList.setAdapter(dataAdapter);
