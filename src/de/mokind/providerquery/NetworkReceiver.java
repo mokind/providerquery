@@ -1,5 +1,6 @@
 package de.mokind.providerquery;
 
+import de.mokind.providerquery.util.PrefUtils;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 public class NetworkReceiver extends BroadcastReceiver{
 	
@@ -15,6 +17,7 @@ public class NetworkReceiver extends BroadcastReceiver{
      */
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.d(PrefUtils.LOG_TAG, "NetworkReceiver.onReceive");
 		//---get the SMS message passed in---
         Bundle bundle = intent.getExtras();
         SmsMessage[] msgs = null;      

@@ -33,7 +33,7 @@ public abstract class LoadList {
 	
 	public static final String PROVIDER_O2 = "o2";
 	public static final String PROVIDER_EPLUS = "E-Plus";
-	public static final String PROVIDER_D1 = "T-Mobile";
+	public static final String PROVIDER_D1 = "Telekom";
 	public static final String PROVIDER_D2 = "Vodafone";
 	public static final String[] PROVIDERS = new String[]{PROVIDER_O2, PROVIDER_D1, PROVIDER_D2, PROVIDER_EPLUS};
 	public static final String ROW_LANDLINE = "Festnetz (oder anderes Netz)";
