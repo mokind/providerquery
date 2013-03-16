@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <item android:id="@+id/doRequest" android:checkable="true" android:visible="true" android:enabled="true"  android:icon="@drawable/ic_menu_download" android:title="Abfragen aller unbekannten Nummern" android:titleCondensed="Abfrage unbekannter Nummern"></item>
-    <item android:id="@+id/delete" android:checkable="true" android:visible="true" android:enabled="true"  android:icon="@drawable/ic_menu_delete" android:title="Alle Netzinfos löschen" android:titleCondensed="Daten löschen"></item>
-    <item android:id="@+id/settings" android:enabled="true" android:checkable="false" android:visible="true" android:title="Einstellungen" android:titleCondensed="Einstellungen"  android:icon="@drawable/ic_menu_preferences"></item>
-    
-    
-</menu>
