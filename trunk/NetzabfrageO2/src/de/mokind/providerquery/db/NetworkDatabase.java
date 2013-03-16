@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Color;
 import de.mokind.R;
+import de.mokind.providerquery.util.LoadList;
 
 /**
  * Access to network database
@@ -77,10 +78,10 @@ public class NetworkDatabase  {
     public static int getColor(String provider){
     	if (colorMap == null){
     		colorMap = new HashMap<String, Integer>(4);
-    		colorMap.put("o2", Color.parseColor("#0E1F7E"));
-    		colorMap.put("T-Mobile", Color.MAGENTA);
-    		colorMap.put("Vodafone", Color.parseColor("#F50000"));
-    		colorMap.put("E-Plus", Color.parseColor("#005A3A"));
+    		colorMap.put(LoadList.PROVIDER_O2, Color.parseColor("#0E1F7E"));
+    		colorMap.put(LoadList.PROVIDER_D1, Color.MAGENTA);
+    		colorMap.put(LoadList.PROVIDER_D2, Color.parseColor("#F50000"));
+    		colorMap.put(LoadList.PROVIDER_EPLUS, Color.parseColor("#005A3A"));
     	}
     	Integer color = colorMap.get(provider);
     	if (color == null){
@@ -98,10 +99,10 @@ public class NetworkDatabase  {
     public static int getLogo(String provider){
     	if (imageMap == null){
     		imageMap = new HashMap<String, Integer>(4);
-    		imageMap.put("o2", R.drawable.logo_o2);
-    		imageMap.put("T-Mobile", R.drawable.logo_tmobile);
-    		imageMap.put("Vodafone", R.drawable.logo_vodafone);
-    		imageMap.put("E-Plus", R.drawable.logo_eplus);
+    		imageMap.put(LoadList.PROVIDER_O2, R.drawable.logo_o2);
+    		imageMap.put(LoadList.PROVIDER_D1, R.drawable.logo_tmobile);
+    		imageMap.put(LoadList.PROVIDER_D2, R.drawable.logo_vodafone);
+    		imageMap.put(LoadList.PROVIDER_EPLUS, R.drawable.logo_eplus);
     	}
     	Integer color = imageMap.get(provider);
     	if (color == null){
@@ -119,10 +120,10 @@ public class NetworkDatabase  {
     public static int getLogoSmall(String provider){
     	if (imageSmallMap == null){
     		imageSmallMap = new HashMap<String, Integer>(4);
-    		imageSmallMap.put("o2", R.drawable.logo_o2_small);
-    		imageSmallMap.put("T-Mobile", R.drawable.logo_tmobile_small);
-    		imageSmallMap.put("Vodafone", R.drawable.logo_vodafone_small);
-    		imageSmallMap.put("E-Plus", R.drawable.logo_eplus_small);
+    		imageSmallMap.put(LoadList.PROVIDER_O2, R.drawable.logo_o2_small);
+    		imageSmallMap.put(LoadList.PROVIDER_D1, R.drawable.logo_tmobile_small);
+    		imageSmallMap.put(LoadList.PROVIDER_D2, R.drawable.logo_vodafone_small);
+    		imageSmallMap.put(LoadList.PROVIDER_EPLUS, R.drawable.logo_eplus_small);
     	}
     	Integer color = imageSmallMap.get(provider);
     	if (color == null){
