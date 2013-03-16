@@ -1,6 +1,7 @@
 package de.mokind.providerquery;
 
 import de.mokind.providerquery.db.NetworkDatabase;
+import de.mokind.providerquery.util.LoadList;
 import de.mokind.providerquery.util.PrefUtils;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -26,7 +27,8 @@ public class NetworkRequester {
 	private static final String SMS_INCOMING_TEXT_1 = "Sehr geehrter Kunde, die angefragte Nummer ist im Netz von ";
 	private static final String SMS_INCOMING_TEXT_2 = " aktiv (Angabe ohne Gewähr).";
 	private static final String SMS_INCOMING_TEXT_ERROR = "leider";
-	private static final String SMS_INCOMING_NUMBER = "66399";
+//	private static final String SMS_INCOMING_NUMBER = "66399";
+	private static final String SMS_INCOMING_NUMBER = SMS_OUTGOING_NUMBER;
 	
 	public static final String NO_PROVIDER_TEXT = "-";
 	public static final String CURRENTLY_REQUESTING_TEXT = "gesendet...";
@@ -111,10 +113,10 @@ public class NetworkRequester {
     			Log.d(PrefUtils.LOG_TAG, "requestNetwork(): queuedNumbers[0] = " + phoneNumber);
 				putStatus(context, phoneNumber, NetworkDatabase.STATUS_SEND);
 				if (showSMS && context != null){
-					Toast.makeText(context, "Sende SMS an " + SMS_OUTGOING_NUMBER + " :\"" + SMS_OUTGOING_TEXT + phoneNumber + "\"", Toast.LENGTH_SHORT).show();
+					Toast.makeText(context, "Sende SMS an " + SMS_OUTGOING_NUMBER + " :\"" + SMS_OUTGOING_TEXT + trimNumber(phoneNumber) + "\"", Toast.LENGTH_SHORT).show();
 				}
 		        SmsManager sms = SmsManager.getDefault();
-		        sms.sendTextMessage(SMS_OUTGOING_NUMBER, null, SMS_OUTGOING_TEXT + phoneNumber, null, null);
+		        sms.sendTextMessage(SMS_OUTGOING_NUMBER, null, SMS_OUTGOING_TEXT + trimNumber(phoneNumber), null, null);
 	    	}
     	}else{
     		clearQueue(context);
@@ -123,6 +125,7 @@ public class NetworkRequester {
     }
     
     public synchronized boolean receiveSMS(Context context, SmsMessage msg){
+    	Log.d(PrefUtils.LOG_TAG, "NetworkRequester.receiveSMS from "+msg.getOriginatingAddress());
     	if (SMS_INCOMING_NUMBER.equals(msg.getOriginatingAddress())){
     		// get apps preferences
     		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -131,7 +134,9 @@ public class NetworkRequester {
     		NetworkDatabase db = new NetworkDatabase(context);
         	String[] sendNumbers = db.getAllNumbers(NetworkDatabase.STATUS_SEND);
 
-        	boolean gotAnswer = false;
+        	Log.d(PrefUtils.LOG_TAG, "NetworkRequester.receiveSMS "+sendNumbers==null?"sendNumbers=null":"sendNumbers[0]="+sendNumbers[0]);
+        	
+//        	boolean gotAnswer = false;
         	if (sendNumbers != null && sendNumbers.length > 0){
 	        	
 	    		// get necessary information
@@ -140,16 +145,18 @@ public class NetworkRequester {
 	    		String msgBody = msg.getMessageBody().toString();
 	            
 	            // extract provider name
-	            String provider = "?";
-	            if (!msgBody.toLowerCase().contains(SMS_INCOMING_TEXT_ERROR)){
-	            	gotAnswer = true;
-	            	provider = msgBody.substring(SMS_INCOMING_TEXT_1.length(), msgBody.length() - SMS_INCOMING_TEXT_2.length());
-	            }else{
-	            	gotAnswer = true;
-	            	provider = NO_PROVIDER_TEXT;
-	            }
+	            String provider = NO_PROVIDER_TEXT;
 	            
-	            if (gotAnswer){
+	            String msgBodyLow = msgBody.toLowerCase();
+	            for (String providerCandidate: LoadList.PROVIDERS){
+	            	if (msgBodyLow.contains(providerCandidate.toLowerCase())){
+	            		provider = providerCandidate;
+//	            		gotAnswer = true;
+	            		break;
+	            	}
+	            }
+	            Log.d(PrefUtils.LOG_TAG, "NetworkRequester.receiveSMS identified "+provider);
+//	            if (gotAnswer){
 		            putNumber (context, phoneNumber, provider);
 		            
 		            // display the new SMS message 
@@ -163,16 +170,16 @@ public class NetworkRequester {
 		            }else{
 		            	CallReceiver.showProvider(context, phoneNumber, provider, true);
 		            }
-	            }else{
-	            	putStatus(context, phoneNumber, NetworkDatabase.STATUS_QUEUED);
-	            }
+//	            }else{
+//	            	putStatus(context, phoneNumber, NetworkDatabase.STATUS_QUEUED);
+//	            }
 	            context.getContentResolver().notifyChange(Contacts.CONTENT_URI, null);
         	}
             
             // do next Request
-        	if (gotAnswer){ // if no answer limit of o2 is reached - no request immmediatly
+//        	if (gotAnswer){ // if no answer limit of o2 is reached - no request immmediatly
         		doNextRequest(context);
-        	}
+//        	}
             return true;
     	}
     	return false;
@@ -234,6 +241,14 @@ public class NetworkRequester {
     	NetworkDatabase db = new NetworkDatabase(context);
     	db.putStatus(phoneNumber, status);
         context.getContentResolver().notifyChange(Contacts.CONTENT_URI, null);
+    }
+    
+    private static String trimNumber(String phoneNumber){
+    	if (phoneNumber != null){
+    		phoneNumber = phoneNumber.replace("+", "00");
+    		phoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+    	}
+    	return phoneNumber;
     }
 	
 }
