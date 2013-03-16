@@ -148,12 +148,14 @@ public class NetworkRequester {
 	            String provider = NO_PROVIDER_TEXT;
 	            
 	            String msgBodyLow = msgBody.toLowerCase();
-	            for (String providerCandidate: LoadList.PROVIDERS){
-	            	if (msgBodyLow.contains(providerCandidate.toLowerCase())){
-	            		provider = providerCandidate;
-//	            		gotAnswer = true;
-	            		break;
-	            	}
+	            if (!msgBodyLow.contains(SMS_INCOMING_TEXT_ERROR)){
+		            for (String providerCandidate: LoadList.PROVIDERS){
+		            	if (msgBodyLow.contains(providerCandidate.toLowerCase())){
+		            		provider = providerCandidate;
+//		            		gotAnswer = true;
+		            		break;
+		            	}
+		            }
 	            }
 	            Log.d(PrefUtils.LOG_TAG, "NetworkRequester.receiveSMS identified "+provider);
 //	            if (gotAnswer){
