@@ -69,6 +69,10 @@ public class Sum implements Comparable<Sum>{
 		return minutesMax;
 	}
 
+	public boolean isShowProgress() {
+		return minutesMax > 0;
+	}
+
 	public Map<String, Sum> getChildren() {
 		return children;
 	}
