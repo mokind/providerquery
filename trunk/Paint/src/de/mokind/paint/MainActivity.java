@@ -1,0 +1,171 @@
+package de.mokind.paint;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.ImageButton;
+
+
+
+public class MainActivity extends Activity {
+
+	private static final int[] imageIDs = new int[]{
+		R.drawable._boot_13946,
+		R.drawable._baum_13980,
+		R.drawable._drachen_14004,
+		R.drawable._regenschirm_22783,
+		R.drawable._entchen_17636,
+		R.drawable._tannenbaum_18521,
+		R.drawable._auto_22848,
+		R.drawable._verkehrsschilder_11150,
+		R.drawable._eule_17634,
+		R.drawable._schwein_17789,
+		R.drawable._raupe_17688,
+		R.drawable._pilz_mit_punkten_18353,
+		R.drawable._geschenk_12430,
+		R.drawable._lebkuchenmaennchen_8667,
+		R.drawable._baer_26995,
+		R.drawable._kaninchen_18373,
+		R.drawable._schildkroete_17882,
+		R.drawable._haeuschen_23127,
+		R.drawable._frosch_17552,
+		R.drawable._brot_14963,
+		R.drawable._blume_18532,
+		R.drawable._flugzeug_10213,
+		R.drawable._eisenbahn_23294,
+		R.drawable._schaaf_17791,
+		R.drawable._schnecke_17587,
+		R.drawable._biene_17635,
+		R.drawable._01a_bewoelkt_mit_sonne_11300,
+		R.drawable._zauberer_karneval_26453,
+		R.drawable._elefant_17581,
+		R.drawable._eiscreme_23299,
+		R.drawable._hund_17890,
+		R.drawable._giraffe_17684,
+		R.drawable._kuh_17792,
+		R.drawable._huhn_18371,
+		R.drawable._esel_17683,
+		R.drawable._sandkasten_26751,
+		R.drawable._fahrrad_23331,
+		R.drawable._affe_17524,
+		R.drawable._bastelecke_26740,
+		R.drawable._vase_mit_blumen_18537,
+		R.drawable._eichel_und_eichenblatt_18550,};
+	
+	private int paintIndex = (int)(Math.random() * (imageIDs.length - 1));
+	
+	// TODO: will man das wirklich??
+//	private HashMap<Integer, Bitmap> paintJobs = new HashMap<Integer, Bitmap>(imageIDs.length); 
+	
+	@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, 
+                                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
+        setContentView(R.layout.activiy_layout);
+
+        // get view instance
+        final DrawView draw = (DrawView) findViewById(R.id.widget_view);
+        final View scroller = findViewById(R.id.ColorScroller);
+        
+        final int backgroundAlpha = 224;
+
+        draw.setPaintColorARGB(255, 235, 0, 0); // set red
+		scroller.setBackgroundColor(Color.argb(backgroundAlpha, 235, 0, 0));
+        
+        // set color button listener
+        int[] imageButtonIDs = new int[]{R.id.Color1, R.id.Color2, R.id.Color3, R.id.Color4, R.id.Color5, R.id.Color6, R.id.Color7, R.id.Color8, R.id.Color9, R.id.Color10};
+        for (int imageButtonID: imageButtonIDs){
+        	ImageButton button = (ImageButton) findViewById(imageButtonID);
+        	button.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					switch (v.getId()){
+					case R.id.Color1:
+					default:
+						draw.setPaintColorARGB(255, 255, 216, 0); // set yellow
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 216, 0));
+						break;
+					case R.id.Color2:
+						draw.setPaintColorARGB(255, 38, 201, 0); // set green
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha,  38, 201, 0));
+						break;
+					case R.id.Color3:
+						draw.setPaintColorARGB(255, 0, 19, 235); // set blue
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 19, 235));
+						break;
+					case R.id.Color4:
+						draw.setPaintColorARGB(255, 178, 0, 255); // set violett
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 178, 0, 255));
+						break;
+					case R.id.Color5:
+						draw.setPaintColorARGB(255, 0, 235, 235); // set cyan
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 235, 235));
+						break;
+					case R.id.Color6:
+						draw.setPaintColorARGB(255, 235, 0, 0); // set red
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 235, 0, 0));
+						break;
+					case R.id.Color7:
+						draw.setPaintColorARGB(255, 128, 128, 128); // set grey
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 128, 128, 128));
+						break;
+					case R.id.Color8:
+						draw.setPaintColorARGB(255, 255, 255, 255); // set white
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 255, 255));
+						break;
+					case R.id.Color9:
+						draw.setPaintColorARGB(255, 255, 100, 200); // set pink
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 100, 200));
+						break;
+					case R.id.Color10:
+						draw.setPaintColorARGB(255, 152, 83, 33); // set brown
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 152, 83, 33));
+						break;
+					}					
+				}
+			});
+        }
+        
+        // set switch button listener 
+        ImageButton buttonNext = (ImageButton) findViewById(R.id.next);
+        buttonNext.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				paintIndex++;
+				if (paintIndex >= imageIDs.length){
+					paintIndex = 0;
+				}
+				draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
+				draw.clearBackround();
+			}
+			
+        });
+
+        ImageButton buttonPrev = (ImageButton) findViewById(R.id.previous);
+        buttonPrev.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				paintIndex--;
+				if (paintIndex < 0){
+					paintIndex = imageIDs.length - 1;
+				}
+				draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
+				draw.clearBackround();
+			}
+        });
+        
+
+
+    }
+
+}
