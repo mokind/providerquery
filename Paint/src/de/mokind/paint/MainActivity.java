@@ -158,13 +158,20 @@ public class MainActivity extends Activity {
         });
         
         ImageButton buttonClear = (ImageButton) findViewById(R.id.clear);
-        buttonClear.setOnClickListener(new View.OnClickListener() {
+        buttonClear.setOnLongClickListener(new View.OnLongClickListener() {
 			
 			@Override
-			public void onClick(View v) {
+			public boolean onLongClick(View v) {
 				draw.clearBackround();
+				return true;
 			}
-        });
+		});
+			
+//			@Override
+//			public void onClick(View v) {
+//				draw.clearBackround();
+//			}
+//        });
         
         // set BLUME :))
         updateDrawable(20);
