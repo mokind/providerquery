@@ -86,12 +86,6 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!--
-    <FrameLayout  
-    android:layout_width="fill_parent"  
-    android:layout_height="fill_parent">
-    -->
-
     <de.mokind.paint.DrawView
         android:id="@+id/widget_view"
         android:layout_width="fill_parent"
@@ -99,6 +93,13 @@
         android:layout_weight="1"
         android:clickable="true"
         android:src="@drawable/_blume_18532" />
+    
+    <ProgressBar
+        android:id="@+id/progress" 
+        android:layout_width="fill_parent"
+        android:layout_height="10dip"
+        style="?android:attr/progressBarStyleHorizontal"/>
+    <!-- android:progressDrawable="@color/lightgrey" -->
 
     <FrameLayout
         android:layout_width="fill_parent"
@@ -162,7 +163,5 @@
             </ImageView>
         </RelativeLayout>
     </FrameLayout>
-
-    <!-- </FrameLayout> -->
 
 </LinearLayout>
