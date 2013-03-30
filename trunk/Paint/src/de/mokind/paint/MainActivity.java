@@ -1,14 +1,20 @@
 package de.mokind.paint;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 
 
@@ -59,6 +65,11 @@ public class MainActivity extends Activity {
 	
 	private int paintIndex = (int)(Math.random() * (imageIDs.length - 1));
 	private DrawView draw = null;
+	
+	private static final int TIMER_SECONDS_MAX = 54000; // 54000 Sekunden = 15 Minuten Spiel
+	private int timerSeconds = 0;
+	private boolean timerPaused = false;
+	private Timer timer = null;
 	
 	// TODO: will man das wirklich: JA!
 	private SparseArray<Bitmap> paintJobs = new SparseArray<Bitmap>(imageIDs.length);
@@ -166,12 +177,6 @@ public class MainActivity extends Activity {
 				return true;
 			}
 		});
-			
-//			@Override
-//			public void onClick(View v) {
-//				draw.clearBackround();
-//			}
-//        });
         
         // set BLUME :))
         updateDrawable(20);
@@ -198,4 +203,76 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	@Override
+	protected void onStart() {
+		super.onStart();
+		// init timer
+		
+		timerSeconds = 5;
+		timerPaused = false;
+		
+		final ProgressBar progressBarView = (ProgressBar) findViewById(R.id.progress);
+		progressBarView.setMax(TIMER_SECONDS_MAX);
+		progressBarView.setProgress(timerSeconds);
+		progressBarView.setIndeterminate(true);
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			
+			@Override
+			public void run() {
+				if (!timerPaused){
+					if (timerSeconds < TIMER_SECONDS_MAX){
+						timerSeconds++;
+						progressBarView.setIndeterminate(false);
+						progressBarView.setProgress(timerSeconds);
+					}else{
+						MainActivity.this.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+//								Toast.makeText(MainActivity.this, "Nu is Schluss",  Toast.LENGTH_LONG).show();
+								progressBarView.setIndeterminate(true);
+								// play tone
+								final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+								alarmTone.play();
+								
+								// TODO setting sleep needs permission DEVICE_POWER
+//								PowerManager pm = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
+//								pm.goToSleep(2000);
+								timer.schedule(new TimerTask() {
+									
+									@Override
+									public void run() {
+										alarmTone.stop();
+										Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+										notificationTone.play();
+										MainActivity.this.finish();
+									}
+								}, 5000);
+							}
+						});
+						cancel();
+					}
+					
+				}
+			}
+		}, timerSeconds * 1000, 1000);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		timerPaused = true;
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		timerPaused = false;
+	}
+
+	@Override
+	protected void onStop(){
+		super.onStop();
+		timer.cancel();
+	}
 }
