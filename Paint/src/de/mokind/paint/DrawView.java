@@ -42,10 +42,8 @@ public class DrawView extends ImageView {
         	drawBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.RGB_565);
         	Canvas myCanvas = new Canvas(drawBitmap);
         	myCanvas.drawARGB(255, 255, 255, 255);
-        }else{
-        	// TODO: draw bitmap here
-        	canvas.drawBitmap(drawBitmap, 0, 0, p);
         }
+        canvas.drawBitmap(drawBitmap, 0, 0, p);
         super.onDraw(canvas);
     }
     
@@ -108,6 +106,14 @@ public class DrawView extends ImageView {
 			}
 		});
     }
+
+	public Bitmap getDrawBitmap() {
+		return drawBitmap;
+	}
+
+	public void setDrawBitmap(Bitmap drawBitmap) {
+		this.drawBitmap = drawBitmap;
+	}
 
 
 }

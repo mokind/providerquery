@@ -1,8 +1,10 @@
 package de.mokind.paint;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -56,9 +58,10 @@ public class MainActivity extends Activity {
 		R.drawable._eichel_und_eichenblatt_18550,};
 	
 	private int paintIndex = (int)(Math.random() * (imageIDs.length - 1));
+	private DrawView draw = null;
 	
-	// TODO: will man das wirklich??
-//	private HashMap<Integer, Bitmap> paintJobs = new HashMap<Integer, Bitmap>(imageIDs.length); 
+	// TODO: will man das wirklich: JA!
+	private SparseArray<Bitmap> paintJobs = new SparseArray<Bitmap>(imageIDs.length);
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +74,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activiy_layout);
 
         // get view instance
-        final DrawView draw = (DrawView) findViewById(R.id.widget_view);
+        draw = (DrawView) findViewById(R.id.widget_view);
         final View scroller = findViewById(R.id.ColorScroller);
         
         final int backgroundAlpha = 224;
@@ -88,24 +91,24 @@ public class MainActivity extends Activity {
 				@Override
 				public void onClick(View v) {
 					switch (v.getId()){
-					case R.id.Color1:
+					case R.id.Color7:
 					default:
 						draw.setPaintColorARGB(255, 255, 216, 0); // set yellow
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 216, 0));
 						break;
-					case R.id.Color2:
+					case R.id.Color5:
 						draw.setPaintColorARGB(255, 38, 201, 0); // set green
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha,  38, 201, 0));
 						break;
-					case R.id.Color3:
+					case R.id.Color4:
 						draw.setPaintColorARGB(255, 0, 19, 235); // set blue
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 19, 235));
 						break;
-					case R.id.Color4:
+					case R.id.Color3:
 						draw.setPaintColorARGB(255, 178, 0, 255); // set violett
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 178, 0, 255));
 						break;
-					case R.id.Color5:
+					case R.id.Color2:
 						draw.setPaintColorARGB(255, 0, 235, 235); // set cyan
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 235, 235));
 						break;
@@ -113,7 +116,7 @@ public class MainActivity extends Activity {
 						draw.setPaintColorARGB(255, 235, 0, 0); // set red
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 235, 0, 0));
 						break;
-					case R.id.Color7:
+					case R.id.Color10:
 						draw.setPaintColorARGB(255, 128, 128, 128); // set grey
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 128, 128, 128));
 						break;
@@ -121,11 +124,11 @@ public class MainActivity extends Activity {
 						draw.setPaintColorARGB(255, 255, 255, 255); // set white
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 255, 255));
 						break;
-					case R.id.Color9:
+					case R.id.Color1:
 						draw.setPaintColorARGB(255, 255, 100, 200); // set pink
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 100, 200));
 						break;
-					case R.id.Color10:
+					case R.id.Color9:
 						draw.setPaintColorARGB(255, 152, 83, 33); // set brown
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 152, 83, 33));
 						break;
@@ -140,12 +143,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				paintIndex++;
-				if (paintIndex >= imageIDs.length){
-					paintIndex = 0;
-				}
-				draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
-				draw.clearBackround();
+				updateDrawable(paintIndex + 1);
 			}
 			
         });
@@ -155,17 +153,42 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				paintIndex--;
-				if (paintIndex < 0){
-					paintIndex = imageIDs.length - 1;
-				}
-				draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
+				updateDrawable(paintIndex - 1);
+			}
+        });
+        
+        ImageButton buttonClear = (ImageButton) findViewById(R.id.clear);
+        buttonClear.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
 				draw.clearBackround();
 			}
         });
         
-
-
+        // set BLUME :))
+        updateDrawable(20);
     }
+	
+	private void updateDrawable(int newPaintIndex){
+		// correct index
+		if (newPaintIndex >= imageIDs.length){
+			newPaintIndex = 0;
+		}
+		if (newPaintIndex < 0){
+			newPaintIndex = imageIDs.length - 1;
+		}
+		
+		// save bitmap
+		Bitmap bitmap = draw.getDrawBitmap();
+		paintJobs.put(paintIndex, bitmap);
+		// set new index
+		paintIndex = newPaintIndex;
+		// set old bitmap
+		draw.setDrawBitmap(paintJobs.get(paintIndex));
+		if (draw != null){
+			draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
+		}
+	}
 
 }
