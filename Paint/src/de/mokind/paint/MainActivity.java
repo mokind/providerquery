@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
 	private int paintIndex = (int)(Math.random() * (imageIDs.length - 1));
 	private DrawView draw = null;
 	
-	private static final int TIMER_SECONDS_MAX = 54000; // 54000 Sekunden = 15 Minuten Spiel
+	private static final int TIMER_SECONDS_MAX = 900; // 900 Sekunden = 15 Minuten Spiel
 	private int timerSeconds = 0;
 	private boolean timerPaused = false;
 	private Timer timer = null;
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
 		scroller.setBackgroundColor(Color.argb(backgroundAlpha, 235, 0, 0));
         
         // set color button listener
-        int[] imageButtonIDs = new int[]{R.id.Color1, R.id.Color2, R.id.Color3, R.id.Color4, R.id.Color5, R.id.Color6, R.id.Color7, R.id.Color8, R.id.Color9, R.id.Color10};
+        int[] imageButtonIDs = new int[]{R.id.Color1, R.id.Color2, R.id.Color3, R.id.Color4, R.id.Color5, R.id.Color6, R.id.Color7, R.id.Color8, R.id.Color9, R.id.Color10, R.id.Color11};
         for (int imageButtonID: imageButtonIDs){
         	ImageButton button = (ImageButton) findViewById(imageButtonID);
         	button.setOnClickListener(new View.OnClickListener() {
@@ -112,11 +112,11 @@ public class MainActivity extends Activity {
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha,  38, 201, 0));
 						break;
 					case R.id.Color4:
-						draw.setPaintColorARGB(255, 0, 19, 235); // set blue
+						draw.setPaintColorARGB(255, 56, 84, 253); // set blue
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 19, 235));
 						break;
 					case R.id.Color3:
-						draw.setPaintColorARGB(255, 178, 0, 255); // set violett
+						draw.setPaintColorARGB(255, 223, 56, 255); // set violett
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 178, 0, 255));
 						break;
 					case R.id.Color2:
@@ -132,16 +132,20 @@ public class MainActivity extends Activity {
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 128, 128, 128));
 						break;
 					case R.id.Color8:
-						draw.setPaintColorARGB(255, 255, 255, 255); // set white
-						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 255, 255));
+						draw.setPaintColorARGB(255, 255, 146, 73); // set orange
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 146, 73));
 						break;
 					case R.id.Color1:
 						draw.setPaintColorARGB(255, 255, 100, 200); // set pink
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 100, 200));
 						break;
 					case R.id.Color9:
-						draw.setPaintColorARGB(255, 152, 83, 33); // set brown
+						draw.setPaintColorARGB(255, 119, 65, 28); // set brown
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 152, 83, 33));
+						break;
+					case R.id.Color11:
+						draw.setPaintColorARGB(255, 255, 255, 255); // set white
+						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 255, 255, 255));
 						break;
 					}					
 				}
