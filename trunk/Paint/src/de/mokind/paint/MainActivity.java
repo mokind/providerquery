@@ -212,60 +212,60 @@ public class MainActivity extends Activity {
 
 	private void initTimer() {
 	
-		if (timer == null){
-			timerSeconds = 5;
-			timerPaused = false;
+		timerPaused = false;
+		if (timer != null){
+        	timer.cancel();
+        }
+		timerSeconds = 2;
+		
+		final ProgressBar progressBarView = (ProgressBar) findViewById(R.id.progress);
+		progressBarView.setMax(TIMER_SECONDS_MAX);
+		progressBarView.setProgress(timerSeconds);
+		progressBarView.setIndeterminate(true);
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
 			
-			final ProgressBar progressBarView = (ProgressBar) findViewById(R.id.progress);
-			progressBarView.setMax(TIMER_SECONDS_MAX);
-			progressBarView.setProgress(timerSeconds);
-			progressBarView.setIndeterminate(true);
-			timer = new Timer();
-			timer.scheduleAtFixedRate(new TimerTask() {
-				
-				@Override
-				public void run() {
-					if (!timerPaused){
-						if (timerSeconds < TIMER_SECONDS_MAX){
-							timerSeconds++;
-							progressBarView.setIndeterminate(false);
-							progressBarView.setProgress(timerSeconds);
-						}else{
-							MainActivity.this.runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
+			@Override
+			public void run() {
+				if (!timerPaused){
+					if (timerSeconds < TIMER_SECONDS_MAX){
+						timerSeconds++;
+						progressBarView.setIndeterminate(false);
+						progressBarView.setProgress(timerSeconds);
+					}else{
+						MainActivity.this.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
 //									Toast.makeText(MainActivity.this, "Nu is Schluss",  Toast.LENGTH_LONG).show();
-									progressBarView.setIndeterminate(true);
-									// play tone
-									final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
-									alarmTone.play();
-									
-									// TODO setting sleep needs permission DEVICE_POWER
+								progressBarView.setIndeterminate(true);
+								// play tone
+								final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+								alarmTone.play();
+								
+								// TODO setting sleep needs permission DEVICE_POWER
 //									PowerManager pm = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
 //									pm.goToSleep(2000);
-									timer.schedule(new TimerTask() {
-										
-										@Override
-										public void run() {
-											alarmTone.stop();
-											Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-											notificationTone.play();
-											draw.setVisibility(View.INVISIBLE);
-											MainActivity.this.finish();
-										}
-									}, 5000);
-								}
-							});
-							cancel();
-						}
-						
+								timer.schedule(new TimerTask() {
+									
+									@Override
+									public void run() {
+										alarmTone.stop();
+										Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+										notificationTone.play();
+										draw.setVisibility(View.INVISIBLE);
+										MainActivity.this.finish();
+									}
+								}, 5000);
+							}
+						});
+						cancel();
 					}
+					
 				}
-			}, timerSeconds * 1000, 1000);
-		}
-		
-		
+			}
+		}, timerSeconds * 1000, 1000);
 	}
+		
 
 	@Override
 	protected void onPause() {
@@ -279,10 +279,4 @@ public class MainActivity extends Activity {
 		timerPaused = false;
 	}
 
-	@Override
-	protected void onStop(){
-		super.onStop();
-		timer.cancel();
-		timer = null;
-	}
 }
