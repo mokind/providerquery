@@ -86,6 +86,7 @@ public class MainActivity extends Activity {
 
         // get view instance
         draw = (DrawView) findViewById(R.id.widget_view);
+        draw.setVisibility(View.VISIBLE);
         final View scroller = findViewById(R.id.ColorScroller);
         
         final int backgroundAlpha = 224;
@@ -116,7 +117,7 @@ public class MainActivity extends Activity {
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 0, 19, 235));
 						break;
 					case R.id.Color3:
-						draw.setPaintColorARGB(255, 223, 56, 255); // set violett
+						draw.setPaintColorARGB(255, 214, 0, 255); // set violett
 						scroller.setBackgroundColor(Color.argb(backgroundAlpha, 178, 0, 255));
 						break;
 					case R.id.Color2:
@@ -150,6 +151,8 @@ public class MainActivity extends Activity {
 					}					
 				}
 			});
+        	
+        	initTimer();
         }
         
         // set switch button listener 
@@ -207,59 +210,61 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-		// init timer
-		
-		timerSeconds = 5;
-		timerPaused = false;
-		
-		final ProgressBar progressBarView = (ProgressBar) findViewById(R.id.progress);
-		progressBarView.setMax(TIMER_SECONDS_MAX);
-		progressBarView.setProgress(timerSeconds);
-		progressBarView.setIndeterminate(true);
-		timer = new Timer();
-		timer.scheduleAtFixedRate(new TimerTask() {
+	private void initTimer() {
+	
+		if (timer == null){
+			timerSeconds = 5;
+			timerPaused = false;
 			
-			@Override
-			public void run() {
-				if (!timerPaused){
-					if (timerSeconds < TIMER_SECONDS_MAX){
-						timerSeconds++;
-						progressBarView.setIndeterminate(false);
-						progressBarView.setProgress(timerSeconds);
-					}else{
-						MainActivity.this.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-//								Toast.makeText(MainActivity.this, "Nu is Schluss",  Toast.LENGTH_LONG).show();
-								progressBarView.setIndeterminate(true);
-								// play tone
-								final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
-								alarmTone.play();
-								
-								// TODO setting sleep needs permission DEVICE_POWER
-//								PowerManager pm = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
-//								pm.goToSleep(2000);
-								timer.schedule(new TimerTask() {
+			final ProgressBar progressBarView = (ProgressBar) findViewById(R.id.progress);
+			progressBarView.setMax(TIMER_SECONDS_MAX);
+			progressBarView.setProgress(timerSeconds);
+			progressBarView.setIndeterminate(true);
+			timer = new Timer();
+			timer.scheduleAtFixedRate(new TimerTask() {
+				
+				@Override
+				public void run() {
+					if (!timerPaused){
+						if (timerSeconds < TIMER_SECONDS_MAX){
+							timerSeconds++;
+							progressBarView.setIndeterminate(false);
+							progressBarView.setProgress(timerSeconds);
+						}else{
+							MainActivity.this.runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+//									Toast.makeText(MainActivity.this, "Nu is Schluss",  Toast.LENGTH_LONG).show();
+									progressBarView.setIndeterminate(true);
+									// play tone
+									final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+									alarmTone.play();
 									
-									@Override
-									public void run() {
-										alarmTone.stop();
-										Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-										notificationTone.play();
-										MainActivity.this.finish();
-									}
-								}, 5000);
-							}
-						});
-						cancel();
+									// TODO setting sleep needs permission DEVICE_POWER
+//									PowerManager pm = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
+//									pm.goToSleep(2000);
+									timer.schedule(new TimerTask() {
+										
+										@Override
+										public void run() {
+											alarmTone.stop();
+											Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+											notificationTone.play();
+											draw.setVisibility(View.INVISIBLE);
+											MainActivity.this.finish();
+										}
+									}, 5000);
+								}
+							});
+							cancel();
+						}
+						
 					}
-					
 				}
-			}
-		}, timerSeconds * 1000, 1000);
+			}, timerSeconds * 1000, 1000);
+		}
+		
+		
 	}
 
 	@Override
@@ -278,5 +283,6 @@ public class MainActivity extends Activity {
 	protected void onStop(){
 		super.onStop();
 		timer.cancel();
+		timer = null;
 	}
 }
