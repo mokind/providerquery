@@ -224,7 +224,6 @@ public class MainActivity extends Activity {
 		progressBarView.setIndeterminate(true);
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new TimerTask() {
-			
 			@Override
 			public void run() {
 				if (!timerPaused){
@@ -236,24 +235,23 @@ public class MainActivity extends Activity {
 						MainActivity.this.runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-//									Toast.makeText(MainActivity.this, "Nu is Schluss",  Toast.LENGTH_LONG).show();
 								progressBarView.setIndeterminate(true);
-								// play tone
+								// start alarm tone
 								final Ringtone alarmTone = RingtoneManager.getRingtone(getApplicationContext(),  RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
 								alarmTone.play();
-								
-								// TODO setting sleep needs permission DEVICE_POWER
-//									PowerManager pm = (PowerManager)MainActivity.this.getSystemService(Context.POWER_SERVICE);
-//									pm.goToSleep(2000);
 								timer.schedule(new TimerTask() {
-									
+									// Close App
 									@Override
 									public void run() {
-										alarmTone.stop();
-										Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-										notificationTone.play();
-										draw.setVisibility(View.INVISIBLE);
-										MainActivity.this.finish();
+										MainActivity.this.runOnUiThread(new Runnable(){
+											public void run(){
+												alarmTone.stop();
+												Ringtone notificationTone = RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+												notificationTone.play();
+												draw.setVisibility(View.INVISIBLE);
+												MainActivity.this.finish();
+											}
+										});
 									}
 								}, 5000);
 							}

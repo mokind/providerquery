@@ -106,6 +106,7 @@
         android:id="@+id/progress" 
         android:layout_width="fill_parent"
         android:layout_height="10dip"
+        android:progressDrawable="@drawable/progressbar_drawable"
         style="?android:attr/progressBarStyleHorizontal"/>
     <!-- android:progressDrawable="@color/lightgrey" -->
 
