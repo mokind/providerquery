@@ -1,5 +1,6 @@
 <resources>
 
     <string name="app_name">Farben malen</string>
+    <string name="image">Bild</string>
 
 </resources>

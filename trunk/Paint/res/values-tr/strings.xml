@@ -1,5 +1,6 @@
 <resources>
 
     <string name="app_name">Boya renkleri</string>
+    <string name="image">Görüntü</string>
 
 </resources>
