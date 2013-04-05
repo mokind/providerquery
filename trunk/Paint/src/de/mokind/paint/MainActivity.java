@@ -29,13 +29,11 @@ public class MainActivity extends Activity {
 		R.drawable._entchen_17636,
 		R.drawable._tannenbaum_18521,
 		R.drawable._auto_22848,
-		R.drawable._verkehrsschilder_11150,
 		R.drawable._eule_17634,
 		R.drawable._schwein_17789,
 		R.drawable._raupe_17688,
 		R.drawable._pilz_mit_punkten_18353,
 		R.drawable._geschenk_12430,
-		R.drawable._lebkuchenmaennchen_8667,
 		R.drawable._baer_26995,
 		R.drawable._kaninchen_18373,
 		R.drawable._schildkroete_17882,
@@ -72,13 +70,11 @@ public class MainActivity extends Activity {
 		"© kief.be",
 		"© kief.be",
 		"openclipart.org",
-		"© www.aleart.com",
 		"© kief.be",
 		"© kief.be",
 		"© kief.be",
 		"© kief.be",
 		"© kief.be",
-		"© B. Nickell - The\nOhio Connection",
 		"openclipart.org",
 		"© kief.be",
 		"© kief.be",
@@ -232,7 +228,7 @@ public class MainActivity extends Activity {
 		});
         
         // set BLUME :))
-        updateDrawable(20);
+        updateDrawable(18);
     }
 	
 	private void updateDrawable(int newPaintIndex){
