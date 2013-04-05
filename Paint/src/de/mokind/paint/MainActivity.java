@@ -15,12 +15,13 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 
 
 public class MainActivity extends Activity {
 
-	private static final int[] imageIDs = new int[]{
+	private static final int[] IMAGE_IDs = new int[]{
 		R.drawable._boot_13946,
 		R.drawable._baum_13980,
 		R.drawable._drachen_14004,
@@ -63,16 +64,59 @@ public class MainActivity extends Activity {
 		R.drawable._vase_mit_blumen_18537,
 		R.drawable._eichel_und_eichenblatt_18550,};
 	
-	private int paintIndex = (int)(Math.random() * (imageIDs.length - 1));
+	private static final String[] IMAGE_CREDITS = new String[]{
+		"© colorpix.be",
+		"© colorpix.be",
+		"© colorpix.be",
+		"openclipart.org",
+		"© kief.be",
+		"© kief.be",
+		"openclipart.org",
+		"© www.aleart.com",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© B. Nickell - The\nOhio Connection",
+		"openclipart.org",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© colorpix.be",
+		"© kief.be",
+		"www.schulbiler.org\nref.15pd",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"www.schulbiler.org\npdref20 ",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be",
+		"© kief.be"};
+	
+	private int paintIndex = (int)(Math.random() * (IMAGE_IDs.length - 1));
 	private DrawView draw = null;
+	private TextView creditView = null;
 	
 	private static final int TIMER_SECONDS_MAX = 900; // 900 Sekunden = 15 Minuten Spiel
 	private int timerSeconds = 0;
 	private boolean timerPaused = false;
 	private Timer timer = null;
 	
-	// TODO: will man das wirklich: JA!
-	private SparseArray<Bitmap> paintJobs = new SparseArray<Bitmap>(imageIDs.length);
+	private SparseArray<Bitmap> paintJobs = new SparseArray<Bitmap>(IMAGE_IDs.length);
 	
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +132,8 @@ public class MainActivity extends Activity {
         draw = (DrawView) findViewById(R.id.widget_view);
         draw.setVisibility(View.VISIBLE);
         final View scroller = findViewById(R.id.ColorScroller);
+        
+        creditView = (TextView) findViewById(R.id.credits);
         
         final int backgroundAlpha = 224;
 
@@ -191,11 +237,11 @@ public class MainActivity extends Activity {
 	
 	private void updateDrawable(int newPaintIndex){
 		// correct index
-		if (newPaintIndex >= imageIDs.length){
+		if (newPaintIndex >= IMAGE_IDs.length){
 			newPaintIndex = 0;
 		}
 		if (newPaintIndex < 0){
-			newPaintIndex = imageIDs.length - 1;
+			newPaintIndex = IMAGE_IDs.length - 1;
 		}
 		
 		// save bitmap
@@ -206,8 +252,11 @@ public class MainActivity extends Activity {
 		// set old bitmap
 		draw.setDrawBitmap(paintJobs.get(paintIndex));
 		if (draw != null){
-			draw.setImageDrawable(getResources().getDrawable(imageIDs[paintIndex]));
+			draw.setImageDrawable(getResources().getDrawable(IMAGE_IDs[paintIndex]));
 		}
+		
+		// set credits
+		creditView.setText(getString(R.string.image) + "\n" + IMAGE_CREDITS[paintIndex]);
 	}
 
 	private void initTimer() {

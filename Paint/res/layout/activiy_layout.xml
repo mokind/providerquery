@@ -171,6 +171,23 @@
                 android:background="@drawable/x" >
             </ImageView>
         </RelativeLayout>
+        
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="50dip"
+            android:paddingRight="53dip"
+            android:layout_gravity="bottom|right" >
+
+            <TextView
+                android:id="@+id/credits"
+                android:textColor="@color/buttonpetrol"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:gravity="right|center_vertical"
+                android:textSize="13sp"
+                android:text="Image\n© B. Nickell - The\nOhio Connection" />
+            
+        </RelativeLayout>
     </FrameLayout>
 
 </LinearLayout>
