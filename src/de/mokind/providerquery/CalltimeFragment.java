@@ -147,30 +147,25 @@ public class CalltimeFragment extends Fragment {
   				((TextView)view).setText(textRepresentation);
   			}else if (data instanceof Sum && view.getId() == R.id.calltime_value) {
   				Sum sum = (Sum)data;
-  				view.setVisibility(sum.getSmsMax() == 0 ? View.VISIBLE : View.GONE);
-  				if (sum.getMinutesMax() > 0){
+  				if (sum.isShowProgress()){
   					((TextView)view).setText(sum.getMinutes() + " von " + sum.getMinutesMax() + " Minuten");
   				}else{
   					((TextView)view).setText(sum.getMinutes() + " Minuten");
   				} 
   			}else if (data instanceof Sum && view.getId() == R.id.calltime_smsount) {  // SMS
   				Sum sum = (Sum)data;
+  				view.setVisibility((sum.getSmsCount() == 0) ? View.GONE : View.VISIBLE );
   				if (sum.getSmsMax() > 0){
   					((TextView)view).setText(sum.getSmsCount() + " von " + sum.getSmsMax() + " SMS");
   				}else{
-					((TextView)view).setText((sum.getSmsCount() == 0) ? "" : sum.getSmsCount() + " SMS");
+					((TextView)view).setText(sum.getSmsCount() + " SMS");
   				}  				
   			}else if (data instanceof Sum && view instanceof ProgressBar){
   				ProgressBar prog = (ProgressBar)view;
   				Sum sum = (Sum)data;
-  				prog.setVisibility(sum.getMinutesMax() > 0 || sum.getSmsMax() > 0 ? View.VISIBLE : View.GONE );
-  				if (sum.getMinutesMax() > 0){
-  					prog.setMax(sum.getMinutesMax());
-  					prog.setProgress(sum.getMinutes());
-  				}else if (sum.getSmsMax() > 0){
-  					prog.setMax(sum.getSmsMax());
-  					prog.setProgress(sum.getSmsCount());
-  				}
+  				prog.setVisibility(sum.isShowProgress() ? View.VISIBLE : View.GONE );
+  				prog.setMax(sum.getMinutesMax());
+  				prog.setProgress(sum.getMinutes());
   			}else if (view.getId() == R.id.calltime_sum_icon){
   				if(LoadList.ROW_FREE_MINUTES.equals(textRepresentation)){
   					((ImageView)view).setImageResource(R.drawable.icon_minutepack_2);

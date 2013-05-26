@@ -40,7 +40,6 @@ public abstract class LoadList {
 	public static final String ROW_UNKNOWN = "Unbekannt";
 	public static final String ROW_UNCHECKED = "Ausland, bzw. Servicenummern";
 	public static final String ROW_FREE_MINUTES = "Freiminuten";
-	public static final String ROW_FREE_SMS = "Frei-SMS";
 	public static final String ROW_FLATRATE = "Flatrate";
 	
 	public static final String KEY_NAME = "name";
@@ -150,23 +149,13 @@ public abstract class LoadList {
 					try {
 						free_minutes = Integer.parseInt(prefs.getString("free_minutes", "100"));
 					} catch (NumberFormatException e) {
-						Log.e(PrefUtils.LOG_TAG, "getList() Preference free_minutes ", e);
+						Log.e(PrefUtils.LOG_TAG, "getList() Preference minute_pack ", e);
 					}
 					boolean flatrateO2 = prefs.getBoolean("flat_o2", true);
 					boolean flatrateEplus = prefs.getBoolean("flat_eplus", false);
 					boolean flatrateD1 = prefs.getBoolean("flat_d1", false);
 					boolean flatrateD2 = prefs.getBoolean("flat_d2", false);
 					boolean landlineFlatrate = prefs.getBoolean("flat_other", false);
-					int free_SMS = 0;
-					try {
-						free_SMS = Integer.parseInt(prefs.getString("free_SMS", "100"));
-					} catch (NumberFormatException e) {
-						Log.e(PrefUtils.LOG_TAG, "getList() Preference free_SMS ", e);
-					}
-					boolean smsFlatrateO2 = prefs.getBoolean("sms_flat_o2", false);
-					boolean smsFlatrateEplus = prefs.getBoolean("sms_flat_eplus", false);
-					boolean smsFlatrateD1 = prefs.getBoolean("sms_flat_d1", false);
-					boolean smsFlatrateD2 = prefs.getBoolean("sms_flat_d2", false);
 					
 							
 					// get database
@@ -190,9 +179,6 @@ public abstract class LoadList {
 					Calendar calStart = getBillingPeriodStart(context, monthOffset);
 					Calendar calEnd = getBillingPeriodEnd(context, monthOffset);
 					
-					// ------------------------------------------------------------------------------
-					// Get MINUTES
-					// ------------------------------------------------------------------------------
 					// sum up provider data with database contents
 					Cursor c = context.getContentResolver().query( 
 			                android.provider.CallLog.Calls.CONTENT_URI, 
@@ -233,60 +219,51 @@ public abstract class LoadList {
 						}while (!c.isLast());
 					}
 					
-					// ------------------------------------------------------------------------------
-					//  Get SMS
-					// ------------------------------------------------------------------------------
-					c = context.getContentResolver().query( 
-							Uri.parse("content://sms/sent"), 
-			                new String[]{"address"},
-			                " date > ? AND date <= ? ",
-			                new String[]{calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
-			                " date DESC"); 
-					if (c.getCount() > 0){
-						do {
-							c.moveToNext();
-							String number = c.getString(0).replaceAll(" ", "");
-							String provider = null;
-							if (!PrefUtils.isNumberCheckable(context, number)){
-								provider = ROW_UNCHECKED;
-							}else{
-								provider = db.getNetwork(number);
-							}
-							if (provider == null){
-								provider = ROW_UNKNOWN;
-							}
-							Sum sum = data.get(provider);
-							if (sum != null){
-								sum.setSmsCount(1 + sum.getSmsCount());
-								Sum numberSum = sum.getChildren().get(number);
-								if (numberSum == null){
-									numberSum = new Sum(number, 0, -1);
-									sum.getChildren().put(number, numberSum);
-								}
-								numberSum.setSmsCount(numberSum.getSmsCount() + 1);							
-							}else{
-								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
-							}
-							
-						}while (!c.isLast());
-					}
+					// SMS
+//					c = context.getContentResolver().query( 
+//							Uri.parse("content://sms/sent"), 
+//			                new String[]{"address"},
+//			                " date > ? AND date <= ? ",
+//			                new String[]{calStart.getTimeInMillis() + "", calEnd.getTimeInMillis() + ""}, 
+//			                " date DESC"); 
+//					if (c.getCount() > 0){
+//						do {
+//							c.moveToNext();
+//							String number = c.getString(0);
+//							String provider = null;
+//							if (!PrefUtils.isNumberCheckable(context, number)){
+//								provider = ROW_UNCHECKED;
+//							}else{
+//								provider = db.getNetwork(number);
+//							}
+//							if (provider == null){
+//								provider = ROW_UNKNOWN;
+//							}
+//							Sum sum = data.get(provider);
+//							if (sum != null){
+//								sum.setSmsCount(1 + sum.getSmsCount());
+//								Sum numberSum = sum.getChildren().get(number);
+//								if (numberSum == null){
+//									numberSum = new Sum(number, 0, -1);
+//									sum.getChildren().put(number, numberSum);
+//								}
+//								numberSum.setSmsCount(numberSum.getSmsCount() + 1);							
+//							}else{
+//								Log.e(PrefUtils.LOG_TAG, "getList() Provider unknown '" + provider + "'");
+//							}
+//							
+//						}while (!c.isLast());
+//					}
 					
-					// ------------------------------------------------------------------------------
 					// sum up flatrates and minute packs
-					// ------------------------------------------------------------------------------
 					Sum freeSum = null;
-					Sum freeSumSMS = null;
 					Sum flatSum = null;
 					
-					if (smsFlatrateO2 || smsFlatrateEplus || smsFlatrateD1 || smsFlatrateD2 || flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate || free_minutes > 0){
+					if (flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate || free_minutes > 0){
 						if (free_minutes > 0){
 							freeSum = new Sum (ROW_FREE_MINUTES, 0, free_minutes);
 						}
-						if (free_SMS > 0){
-							freeSumSMS = new Sum (ROW_FREE_SMS, 0, 0);
-							freeSumSMS.setSmsMax(free_SMS);
-						}
-						if (smsFlatrateO2 || smsFlatrateEplus || smsFlatrateD1 || smsFlatrateD2 || flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate){
+						if (flatrateO2 || flatrateEplus || flatrateD1 || flatrateD2 || landlineFlatrate){
 							flatSum = new Sum (ROW_FLATRATE, 0, 0);
 						}			
 						
@@ -306,19 +283,6 @@ public abstract class LoadList {
 										freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
 										freeSum.getChildren().putAll(providerSum.getChildren());
 									}
-									if (PROVIDER_O2.equals(providerSum.getName()) 	 && smsFlatrateO2 ||
-										PROVIDER_EPLUS.equals(providerSum.getName()) && smsFlatrateEplus || 
-										PROVIDER_D1.equals(providerSum.getName()) 	 && smsFlatrateD1 ||
-										PROVIDER_D2.equals(providerSum.getName())    && smsFlatrateD2)
-										{
-											// flatrate
-											flatSum.setSmsCount(flatSum.getSmsCount() + providerSum.getSmsCount());
-											flatSum.getChildren().putAll(providerSum.getChildren());
-										}else if (freeSum != null){
-											// SMS pack
-											freeSumSMS.setSmsCount(freeSumSMS.getSmsCount() + providerSum.getSmsCount());
-											freeSumSMS.getChildren().putAll(providerSum.getChildren());
-										}
 							}else if (ROW_UNKNOWN.equals(providerSum.getName()) || ROW_UNCHECKED.equals(providerSum.getName())){
 								// unknown/unchecked -> discard
 							}else if (landlineFlatrate){
@@ -329,14 +293,9 @@ public abstract class LoadList {
 								// minute pack
 								freeSum.setMinutes(freeSum.getMinutes() + providerSum.getMinutes());
 								freeSum.getChildren().putAll(providerSum.getChildren());
-							}else if (freeSumSMS != null){
-								// SMS pack
-								freeSumSMS.setSmsCount(freeSumSMS.getSmsCount() + providerSum.getSmsCount());
-								freeSumSMS.getChildren().putAll(providerSum.getChildren());
 							}
 						}
 					}
-					
 					
 					// only for sorting
 					Map<String, Sum> tempdata = new LinkedHashMap<String, Sum>(data);
@@ -345,10 +304,6 @@ public abstract class LoadList {
 					if (freeSum != null){
 						// add free minutes row
 						data.put(freeSum.getName(), freeSum);
-					}
-					if (freeSumSMS != null){
-						// add free minutes row
-						data.put(freeSumSMS.getName(), freeSumSMS);
 					}
 					if (flatSum != null){
 						// add flat rate row
