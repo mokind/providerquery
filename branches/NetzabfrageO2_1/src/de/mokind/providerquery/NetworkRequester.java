@@ -110,13 +110,18 @@ public class NetworkRequester {
 	    		boolean showSMS = prefs.getBoolean("ShowSMS", false);
 	    		
 	    		String phoneNumber = queuedNumbers[0];
-    			Log.d(PrefUtils.LOG_TAG, "requestNetwork(): queuedNumbers[0] = " + phoneNumber);
+	    		String phoneNumberTrimmed = trimNumber(context, phoneNumber);
+    			Log.d(PrefUtils.LOG_TAG, "requestNetwork(): queuedNumbers[0] = " + phoneNumber + ", trimmed: " + phoneNumberTrimmed);
 				putStatus(context, phoneNumber, NetworkDatabase.STATUS_SEND);
 				if (showSMS && context != null){
-					Toast.makeText(context, "Sende SMS an " + SMS_OUTGOING_NUMBER + " :\"" + SMS_OUTGOING_TEXT + trimNumber(phoneNumber) + "\"", Toast.LENGTH_SHORT).show();
+					Toast.makeText(
+							context,
+							"Sende SMS an " + SMS_OUTGOING_NUMBER + " :\""
+									+ SMS_OUTGOING_TEXT
+									+ phoneNumberTrimmed + "\"", Toast.LENGTH_SHORT).show();
 				}
 		        SmsManager sms = SmsManager.getDefault();
-		        sms.sendTextMessage(SMS_OUTGOING_NUMBER, null, SMS_OUTGOING_TEXT + trimNumber(phoneNumber), null, null);
+		        sms.sendTextMessage(SMS_OUTGOING_NUMBER, null, SMS_OUTGOING_TEXT + phoneNumberTrimmed, null, null);
 	    	}
     	}else{
     		clearQueue(context);
@@ -245,12 +250,34 @@ public class NetworkRequester {
         context.getContentResolver().notifyChange(Contacts.CONTENT_URI, null);
     }
     
-    private static String trimNumber(String phoneNumber){
+	private static String trimNumber(Context context, String phoneNumber){
     	if (phoneNumber != null){
+    		phoneNumber = skipDualCode(context, phoneNumber);
     		phoneNumber = phoneNumber.replace("+", "00");
+    		// Roland Ortloff: I thought that O2 has a problem with a leading 0049
+    		// but finally it does not seem so
+			// if (phoneNumber.startsWith("0049")) {
+    		// 	phoneNumber = "0" + phoneNumber.substring(4);
+    		// }
     		phoneNumber = phoneNumber.replaceAll("[^0-9]", "");
     	}
     	return phoneNumber;
     }
 	
+	public static String skipDualCode(Context context, String phoneNumber){
+		
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		if ( prefs.getBoolean("NumberSkipDualCode", true)){
+			if (phoneNumber.startsWith("*1") ||
+				phoneNumber.startsWith("*2")    ){
+				Toast.makeText(context, "Convert from " + phoneNumber + " to " + phoneNumber.substring(2), Toast.LENGTH_SHORT).show();
+				phoneNumber = phoneNumber.substring(2);
+			}
+		}
+		else
+		{
+			// Toast.makeText(context, "Dual disabled for " + phoneNumber, Toast.LENGTH_SHORT).show();
+		}
+		return phoneNumber;
+	}
 }

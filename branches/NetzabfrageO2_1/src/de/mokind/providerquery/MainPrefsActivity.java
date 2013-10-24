@@ -23,7 +23,7 @@ public class MainPrefsActivity extends PreferenceActivity  {
 				public boolean onPreferenceClick(Preference preference) {
 					if (preference.getPreferenceManager().getSharedPreferences().getBoolean(preference.getKey(), false)){
 						AlertDialog.Builder builder = new AlertDialog.Builder(MainPrefsActivity.this);
-			        	builder.setMessage("ACHTUNG: In Romaing-Netzen kann das Senden der Abfrage-SMS Kosten verursachen.")
+			        	builder.setMessage("ACHTUNG: In Roaming-Netzen kann das Senden der Abfrage-SMS Kosten verursachen.")
 			        	       .setCancelable(true)
 			        	       .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			        	           public void onClick(DialogInterface dialog, int id) {
@@ -46,7 +46,7 @@ public class MainPrefsActivity extends PreferenceActivity  {
 				public boolean onPreferenceClick(Preference preference) {
 					if (preference.getPreferenceManager().getSharedPreferences().getBoolean(preference.getKey(), false)){
 						AlertDialog.Builder builder = new AlertDialog.Builder(MainPrefsActivity.this);
-			        	builder.setMessage("ACHTUNG: In anderen Netzen als O2 kann das Senden der Abfrage-SMS Kosten verursachen. Und macht idR keine Sinn. Setzen Sie diese Option nur, wenn Sie wissen dass sie im O2-Netz sind und die App etwas anderes vermutet.")
+			        	builder.setMessage("ACHTUNG: In anderen Netzen als O2 kann das Senden der Abfrage-SMS Kosten verursachen. Und macht idR keinen Sinn. Setzen Sie diese Option nur, wenn Sie wissen dass sie im O2-Netz sind und die App etwas anderes vermutet.")
 			        	       .setCancelable(true)
 			        	       .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			        	           public void onClick(DialogInterface dialog, int id) {
