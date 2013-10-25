@@ -110,7 +110,7 @@ public class NetworkRequester {
 	    		boolean showSMS = prefs.getBoolean("ShowSMS", false);
 	    		
 	    		String phoneNumber = queuedNumbers[0];
-	    		String phoneNumberTrimmed = trimNumber(context, phoneNumber);
+	    		String phoneNumberTrimmed = PrefUtils.trimNumber(context, phoneNumber);
     			Log.d(PrefUtils.LOG_TAG, "requestNetwork(): queuedNumbers[0] = " + phoneNumber + ", trimmed: " + phoneNumberTrimmed);
 				putStatus(context, phoneNumber, NetworkDatabase.STATUS_SEND);
 				if (showSMS && context != null){
@@ -248,36 +248,5 @@ public class NetworkRequester {
     	NetworkDatabase db = new NetworkDatabase(context);
     	db.putStatus(phoneNumber, status);
         context.getContentResolver().notifyChange(Contacts.CONTENT_URI, null);
-    }
-    
-	private static String trimNumber(Context context, String phoneNumber){
-    	if (phoneNumber != null){
-    		phoneNumber = skipDualCode(context, phoneNumber);
-    		phoneNumber = phoneNumber.replace("+", "00");
-    		// Roland Ortloff: I thought that O2 has a problem with a leading 0049
-    		// but finally it does not seem so
-			// if (phoneNumber.startsWith("0049")) {
-    		// 	phoneNumber = "0" + phoneNumber.substring(4);
-    		// }
-    		phoneNumber = phoneNumber.replaceAll("[^0-9]", "");
-    	}
-    	return phoneNumber;
-    }
-	
-	public static String skipDualCode(Context context, String phoneNumber){
-		
-    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if ( prefs.getBoolean("NumberSkipDualCode", true)){
-			if (phoneNumber.startsWith("*1") ||
-				phoneNumber.startsWith("*2")    ){
-				Toast.makeText(context, "Convert from " + phoneNumber + " to " + phoneNumber.substring(2), Toast.LENGTH_SHORT).show();
-				phoneNumber = phoneNumber.substring(2);
-			}
-		}
-		else
-		{
-			// Toast.makeText(context, "Dual disabled for " + phoneNumber, Toast.LENGTH_SHORT).show();
-		}
-		return phoneNumber;
 	}
 }
