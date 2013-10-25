@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.Toast;
 import de.mokind.providerquery.MainActivity;
 import de.mokind.providerquery.NetworkRequester;
 import de.mokind.providerquery.db.NetworkDatabase;
@@ -195,7 +196,11 @@ public abstract class LoadList {
 							// 'Taktung' = 60 seconds
 							int minutes = seconds / 60 + (seconds%60 > 0 ? 1 : 0);
 							String provider = null;
-							if (!PrefUtils.isNumberCheckable(context, number)){
+							// Roland Ortloff: Unfortunately, it doesn't work with PrefUtils.trimNumber,
+							// therefore I copied the code from PrefUtils to LoadList,
+							// perhaps someone else can make this better
+							String numberTrimmed = trimNumber(context, number);
+							if (!PrefUtils.isNumberCheckable(context, numberTrimmed)){
 								provider = ROW_UNCHECKED;
 							}else{
 								provider = db.getNetwork(number);
@@ -373,4 +378,40 @@ public abstract class LoadList {
 		dataArray = null;
 	}
 
+	
+	
+	public static String trimNumber(Context context, String phoneNumber) {
+		if (phoneNumber != null) {
+			phoneNumber = skipDualCode(context, phoneNumber);
+			phoneNumber = phoneNumber.replace("+", "00");
+			// Roland Ortloff: I thought that O2 has a problem with a leading
+			// 0049
+			// but finally it does not seem so
+			// if (phoneNumber.startsWith("0049")) {
+			// phoneNumber = "0" + phoneNumber.substring(4);
+			// }
+			phoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+		}
+		return phoneNumber;
+	}
+
+	private static String skipDualCode(Context context, String phoneNumber) {
+
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(context);
+		if (prefs.getBoolean("NumberSkipDualCode", true)) {
+			if (phoneNumber.startsWith("*1") || phoneNumber.startsWith("*2")) {
+				// Toast.makeText(
+				// 		context,
+				// 		"Convert from " + phoneNumber + " to "
+				// 				+ phoneNumber.substring(2), Toast.LENGTH_SHORT)
+				// 		.show();
+				phoneNumber = phoneNumber.substring(2);
+			}
+		} else {
+			// Toast.makeText(context, "Dual disabled for " + phoneNumber,
+			// Toast.LENGTH_SHORT).show();
+		}
+		return phoneNumber;
+	}
 }

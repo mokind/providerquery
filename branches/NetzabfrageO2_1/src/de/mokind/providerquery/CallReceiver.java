@@ -31,7 +31,8 @@ public class CallReceiver extends BroadcastReceiver {
 		
 		String phoneNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
 		
-		boolean requestable = PrefUtils.isNumberCheckable(context, phoneNumber);
+		String phoneNumberTrimmed = PrefUtils.trimNumber(context, phoneNumber);
+		boolean requestable = PrefUtils.isNumberCheckable(context, phoneNumberTrimmed);
 
 		// get provider
 		String provider = null;
